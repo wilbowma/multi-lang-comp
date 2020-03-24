@@ -71,3 +71,6 @@
   In a normalizing rewrite system, we can generate #t in the multi-language
   reduction relying on the reduction system to normalize that to its bit-level
   representation in a later step of normalization.
+- Read this. Then reread it.
+  https://docs.racket-lang.org/redex/redex2015.html?q=subst/proc&q=extended-language#%28part._mon-mor%29
+  There's something deep I haven't quite understood.
