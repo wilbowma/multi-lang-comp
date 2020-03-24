@@ -52,6 +52,58 @@
           e #:refers-to (shadow x ...))
   (let ([x e_1] ...) e_2 #:refers-to (shadow x ...)))
 
+#;(define-metafunction λiL
+  [(subst-all () () any) any]
+  [(subst-all (x_1 x ...) (e_1 e ...) any)
+   (subst-all (x ...) (e ...) (substitute any e_1 x_1))])
+
+#;(define λi->
+  (reduction-relation
+   λiL-eval
+   #:domain e
+   #:codomain e
+
+   (--> (S ((λ (x ...) e) e_1 ...))
+        (subst-all (x_1 ...) (e_1 ...) e))
+
+   (--> (S (let ([x_1 e_1] ...) e))
+        (subst-all (x_1 ...) (e_1 ...) e))
+
+   (--> (S (letrec ([x_1 e_1] ...
+          e))
+        ((S (x_1 e_1) ...) e)))
+
+   ;; Booleans
+   (--> (S (if #t e_1 e_2))
+        (S e_1))
+   (--> (S (boolean? #t))
+        (S #t))
+   (--> (S (boolean? #f))
+        (S #t))
+   (--> (S (boolean? v))
+        (S #f)
+        (side-condition
+         ,(not (redex-match? λiL-eval boolean v)))))
+
+   ;; Boxes
+   (--> (S (box e))
+        ((S (x (box e))) x)
+        (fresh x))
+   (--> (((x_1 e_1) ... (x (box e)) (x_r e_r) ...) (unbox x))
+        (S e))
+   (--> (((x_1 e_1) ... (x (box e)) (x_r e_r) ...) (set-box! x e_1))
+        (((x_1 e_1) ... (x (box e_1)) (x_r e_r) ...) (void)))
+   (--> (((x_1 e_1) ... (x (box e)) (x_r e_r) ...) (box? x))
+        (((x_1 e_1) ... (x (box e_1)) (x_r e_r) ...) #t))
+
+   ;; Pairs
+   (--> (S (car (cons e_1 e_2)))
+        (S e_1))
+   (--> (S (cdr (cons e_1 e_2)))
+        (S e_2))
+   (--> (S (pair? (cons e_1 e_2)))
+        (S #t))
+   ))
 
 (define-term s-eg
   (let ([x (box 0)])
