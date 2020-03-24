@@ -122,7 +122,25 @@
    (--> (car e_1) (mref e_1 (word 0)))
    (--> (cdr e_1) (mref e_1 (word 1)))
    (--> (pair? e)
-        (compare (tag-eq? e 'pair) #t #f))))
+        (compare (tag-eq? e 'pair) #t #f))
+
+
+   ;; Commuting conversions
+   ;; Since we're in ANF, we can either go the F-to-TAL route and explicitly
+   ;; manage declarations.. or just have separate commuting conversions,
+   ;; which are easier to specify, and let normalization take care of it.
+   (--> (let ([x_1 (let ([x_2 e_2]) e_1)])
+          e)
+        (let ([x_2 e_2])
+          (let ([x_1 e_1])
+            e)))
+
+   (--> (let ([x_1 (begin e_s ... e_1)])
+          e)
+
+        (begin e_s ...
+               (let ([x_1 e_1])
+                 e)))))
 
 #|
 (compare (flag e_1 e_2) e_t e_f)
@@ -230,81 +248,80 @@
                (eq? x (immediate 0 'empty))
                (immediate 1 'bool)
                (immediate 0 'bool))))))
-        (let ((x
-               (let ((x1 (alloc (word 1) 'box)))
-                 (begin
-                   (mset! x1 (word 0) (immediate 0 'fixnum))
-                   x1))))
-          (let ((s1 (word 2)))
-            (let ((fact«8489» (alloc s1 'procedure)))
-              (begin
-                (begin
-                  (mset! fact«8489» (word 0) factL)
-                  (mset! fact«8489» (word 1) fact«8489»))
-                (let ((s2 (word 2)) (s3 (word 2)))
-                  (let ((even?«8742» (alloc s2 'procedure))
-                        (odd?«8743» (alloc s3 'procedure)))
+        (let ((x1 (alloc (word 1) 'box)))
+          (begin
+            (mset! x1 (word 0) (immediate 0 'fixnum))
+            (let ((x x1))
+              (let ((s1 (word 2)))
+                (let ((fact«8489» (alloc s1 'procedure)))
+                  (begin
                     (begin
-                      (begin
-                        (mset! even?«8742» (word 0) even?L)
-                        (mset! even?«8742» (word 1) odd?«8743»))
-                      (begin
-                        (mset! odd?«8743» (word 0) odd?L)
-                        (mset! odd?«8743» (word 1) even?«8742»))
-                      (begin
-                        (compare
-                         (eq?
-                          (call
-                           (mref even?«8742» (word 0))
-                           even?«8742»
-                           (call
-                            (mref fact«8489» (word 0))
-                            fact«8489»
-                            (immediate 5 'fixnum)))
-                          (immediate 0 'bool))
-                         (mset!
-                          x
-                          (word 0)
-                          (let ((x (alloc (word 2) 'pair)))
-                            (begin
-                              (mset!
-                               x
-                               (word 0)
-                               (immediate 2 'fixnum))
-                              (mset!
-                               x
-                               (word 1)
-                               (immediate 0 'empty))
-                              x)))
-                         (let ((s4 (word 2)))
-                           (let ((length«12165»
-                                         (alloc s4 'procedure)))
-                             (begin
-                               (begin
-                                 (mset!
-                                  length«12165»
-                                  (word 0)
-                                  lengthL)
-                                 (mset!
-                                  length«12165»
-                                  (word 1)
-                                  length«12165»))
-                               (mset!
-                                x
-                                (word 0)
-                                (call
-                                 (mref length«12165» (word 0))
-                                 length«12165»
-                                 (let ((x
-                                        (alloc (word 2) 'pair)))
+                      (mset! fact«8489» (word 0) factL)
+                      (mset! fact«8489» (word 1) fact«8489»))
+                    (let ((s2 (word 2)) (s3 (word 2)))
+                      (let ((even?«8742» (alloc s2 'procedure))
+                            (odd?«8743» (alloc s3 'procedure)))
+                        (begin
+                          (begin
+                            (mset! even?«8742» (word 0) even?L)
+                            (mset! even?«8742» (word 1) odd?«8743»))
+                          (begin
+                            (mset! odd?«8743» (word 0) odd?L)
+                            (mset! odd?«8743» (word 1) even?«8742»))
+                          (begin
+                            (compare
+                             (eq?
+                              (call
+                               (mref even?«8742» (word 0))
+                               even?«8742»
+                               (call
+                                (mref fact«8489» (word 0))
+                                fact«8489»
+                                (immediate 5 'fixnum)))
+                              (immediate 0 'bool))
+                             (mset!
+                              x
+                              (word 0)
+                              (let ((x (alloc (word 2) 'pair)))
+                                (begin
+                                  (mset!
+                                   x
+                                   (word 0)
+                                   (immediate 2 'fixnum))
+                                  (mset!
+                                   x
+                                   (word 1)
+                                   (immediate 0 'empty))
+                                  x)))
+                             (let ((s4 (word 2)))
+                               (let ((length«12165»
+                                             (alloc s4 'procedure)))
+                                 (begin
                                    (begin
                                      (mset!
-                                      x
+                                      length«12165»
                                       (word 0)
-                                      (immediate 1 'fixnum))
+                                      lengthL)
                                      (mset!
-                                      x
+                                      length«12165»
                                       (word 1)
-                                      (immediate 0 'empty))
-                                     x))))))))
-                        (mref x (word 0)))))))))))))))
+                                      length«12165»))
+                                   (mset!
+                                    x
+                                    (word 0)
+                                    (call
+                                     (mref length«12165» (word 0))
+                                     length«12165»
+                                     (let ((x
+                                            (alloc (word 2) 'pair)))
+                                       (begin
+                                         (mset!
+                                          x
+                                          (word 0)
+                                          (immediate 1 'fixnum))
+                                         (mset!
+                                          x
+                                          (word 1)
+                                          (immediate 0 'empty))
+                                         x))))))))
+                            (mref x (word 0)))))))))))))))))
