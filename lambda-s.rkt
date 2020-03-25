@@ -103,7 +103,7 @@
         (S e_2))
    (--> (S (pair? (cons e_1 e_2)))
         (S #t))
-   ))
+   )
 
 (define-term s-eg
   (let ([x (box 0)])
