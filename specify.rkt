@@ -71,7 +71,9 @@
                     (term (mset! ,x (word ,index) ,e))))))
    (--> (closure-ref e_b e_i) (mref e_b e_i))
    (--> (apply-closure e e_a ...)
-        (call (mref e (word 0)) e_a ...))
+        (let ([x (mref e (word 0))])
+          (call x e_a ...))
+        (fresh x))
    (--> (procedure? e)
         (compare (tag-eq? e 'procedure) #t #f))
 
