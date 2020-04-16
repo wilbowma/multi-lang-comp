@@ -32,18 +32,22 @@
 ; λiL is the λ-calculus internal language.
 (define-language λiL
   [e ::= (letrec ([x (λ (x ...) e)] ...) e) (e e ...) x
-         (begin e ... e) (void)
-         (let ([x e] ...) e)
-         (box e) (unbox e) (set-box! e e)
-         empty (pair e e) (first e) (second e)
-         fixnum (arith-op e e)
-         true false (if e e e)
-         (< e e) (eq? e e)
-         (tag-pred e)]
+     (let ([x e] ...) e) (error)
+     (begin e ... e) (void)
+     (box e) (unbox e) (set-box! e e)
+     empty (pair e e) (first e) (second e)
+     fixnum (arith-op e e)
+     true false (if e e e)
+     (< e e) (eq? e e)
+     (tag-pred e)]
   [x ::= variable-not-otherwise-mentioned]
   [fixnum ::= integer]
   [arith-op ::= + - * /]
-  [tag-pred ::= eq? pair? fixnum? boolean?]
+  [tag-pred ::= pair? fixnum? boolean?]
+
+  [S ::= ((l . v) ...)]
+  [l ::= (variable-prefix 'l)]
+  [v ::= fixnum true false empty (pair v v) (λ (x ...) e) (box v) l]
   #:binding-forms
   (λ (x ...) e #:refers-to (shadow x ...))
   (letrec ([x any] ...) #:refers-to (shadow x ...)
@@ -54,58 +58,136 @@
 (define (max-int word-size) (sub1 (expt 2 (sub1 word-size))))
 (define (min-int word-size) (* -1 (expt 2 (sub1 word-size))))
 
-#;(define-metafunction λiL
+(define-metafunction λiL
   [(subst-all () () any) any]
   [(subst-all (x_1 x ...) (e_1 e ...) any)
    (subst-all (x ...) (e ...) (substitute any e_1 x_1))])
 
-#;(define λi->
+(require racket/syntax)
+(define fresh-label
+  (let ([x (box 0)])
+    (lambda _
+      (set-box! x (add1 (unbox x)))
+      (format-symbol "l~a" (unbox x)))))
+
+(define-metafunction λiL
+  [(is-box? v)
+   ])
+
+(define-metafunction λiL
+  [(is-pair? v)
+   ])
+
+(define-metafunction λiL
+  [(is-fixnum? v)
+   ])
+
+(define (box-error? v)
+  (or (not (redex-match? λiL-eval l (term v)))
+      (not (redex-match? λiL-eval (box v)
+                         (dict-ref (term S) (term l))))))
+
+(define (boolean-error? v)
+  (not (redex-match? λiL-eval boolean v)))
+
+(define (pair-error? v)
+  (not (redex-match? λiL-eval (pair e_1 e_2) (term v))))
+
+(require racket/dict)
+(define λi->
   (reduction-relation
    λiL-eval
-   #:domain e
-   #:codomain e
+   #:domain (S e)
+   #:codomain (S e)
 
-   (--> (S ((λ (x ...) e) e_1 ...))
-        (subst-all (x_1 ...) (e_1 ...) e))
+   (--> (S ((λ (x ..._1) e) v ..._1))
+        (S (subst-all (x ...) (v ...) e)))
 
-   (--> (S (let ([x_1 e_1] ...) e))
-        (subst-all (x_1 ...) (e_1 ...) e))
+   (--> (S ((λ (x ...) e) v ...))
+        (S (error))
+        (side-condition (not (eq? (length (term (x ...)))
+                                  (length (term (v ...)))))))
 
-   (--> (S (letrec ([x_1 e_1] ...
-          e))
-        ((S (x_1 e_1) ...) e)))
+   (--> (S (let ([x v] ...) e))
+        (S (subst-all (x ...) (v ...) e)))
+
+   (--> (S_1 (letrec ([x v] ...) e))
+        (S_2 (let ([x l] ...) e))
+
+        (where (l ...) ,(map fresh-label (term (x ...))))
+        (where S_2 ,(append S_1 (term ((l v) ...)))))
+
+   (--> (S (l v ...))
+        (S (v_1 v ...))
+        (where v_1 ,(dict-ref (term S) (term l))))
 
    ;; Booleans
-   (--> (S (if #t e_1 e_2))
-        (S e_1))
+   (--> (S (if #f e_1 e_2))
+        (S e_2))
+   (--> (S (if v e_1 e_2))
+        (S e_1)
+        (where (v_!_1 v_!_1) (v #f)))
+
    (--> (S (boolean? #t))
         (S #t))
    (--> (S (boolean? #f))
         (S #t))
    (--> (S (boolean? v))
         (S #f)
-        (side-condition
-         ,(not (redex-match? λiL-eval boolean v)))))
+        (side-condition ,(boolean-error? (term v)))))
 
-   ;; Boxes
-   (--> (S (box e))
-        ((S (x (box e))) x)
-        (fresh x))
-   (--> (((x_1 e_1) ... (x (box e)) (x_r e_r) ...) (unbox x))
-        (S e))
-   (--> (((x_1 e_1) ... (x (box e)) (x_r e_r) ...) (set-box! x e_1))
-        (((x_1 e_1) ... (x (box e_1)) (x_r e_r) ...) (void)))
-   (--> (((x_1 e_1) ... (x (box e)) (x_r e_r) ...) (box? x))
-        (((x_1 e_1) ... (x (box e_1)) (x_r e_r) ...) #t))
+  ;; Boxes
+  (--> (S (box e))
+       ((S (l (box e))) l)
+       (where l ,(fresh-label)))
+  (--> (S (unbox l))
+       (S v)
+       (where (box v) ,(dict-ref (term S) (term l))))
+  (--> (S (unbox v))
+       (S (error))
+       (side-condition ,(box-error? (term v))))
+  (--> (S_1 (set-box! l v))
+       (S_2 (void))
+       (where S_2 ,(dict-set (term S) (term l) (term (box v)))))
+  (--> (S (box? l))
+       (S #t)
+       (where (box v) ,(dict-ref (term S) (term l))))
+  (--> (S (box? v))
+       (S #f)
+       (side-condition ,(box-error? (term v))))
 
-   ;; Pairs
-   (--> (S (car (cons e_1 e_2)))
-        (S e_1))
-   (--> (S (cdr (cons e_1 e_2)))
-        (S e_2))
-   (--> (S (pair? (cons e_1 e_2)))
-        (S #t))
-   )
+  ;; Pairs
+  (--> (S (first (pair v_1 v_2)))
+       (S v_1))
+  (--> (S (first v))
+       (S (error))
+       (side-condition ,(pair-error? (term v))))
+  (--> (S (second (pair v_1 v_2)))
+       (S v_2))
+  (--> (S (second v))
+       (S (error))
+       (side-condition ,(pair-error? (term v))))
+  (--> (S (pair? (pair v_1 v_2)))
+       (S #t))
+  (--> (S (pair? v))
+       (S #f)
+       (side-condition ,(pair-error? (term v))))
+
+  (--> (S (airth-op fixnum_1 fixnum_2))
+       (S v)
+       (where v (eval (term (arith-op fixnum_1 fixnum_2)))))
+
+  (--> (S (airth-op v_1 v_2))
+       (S (error))
+       (side-condition ,(fixnum-error? (term v_1))))
+  (--> (S (airth-op v_1 v_2))
+       (S (error))
+       (side-condition ,(fixnum-error? (term v_2))))
+  (--> (S (fixnum? fixnum_1))
+       (S #t))
+  (--> (S (fixnum? fixnum_1))
+       (S #f)
+       (side-condition ,(fixnum-error? (term v_2)))))
 
 (define-term s-eg
   (let ([x (box 0)])
