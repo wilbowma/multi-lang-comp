@@ -6,7 +6,8 @@
 ; λsL is the λ-calculus surface language.
 ; It's a Scheme-like language, but could be ML like if given a type system
 (define-language λsL
-  [e ::= (λ (x ...) e) (e e ...) x (begin e ... e) (box e) (unbox e)
+  [e ::= (λ (x ...) e) (e e ...) x
+     (begin e ... e) (box e) (unbox e)
      (set-box! e) (cons e e) (car e) (cdr e) fixnum (+ e e) (* e e)
      (let ([x e] ...) e) (letrec ([x e] ...) e)
      (void) '()
@@ -30,27 +31,28 @@
 
 ; λiL is the λ-calculus internal language.
 (define-language λiL
-  [e ::= (letrec ([x (λ (x ...) e)] ...) e) (e e ...) x (begin e ... e) (box e)
-     (unbox e) (set-box! e e) (cons e e) (car e) (cdr e) fixnum (+ e e) (- e e) (* e e)
-     (let ([x e] ...) e)
-     (void) '()
-     (if e e e)
-     (eq? e e)
-     (pair? e)
-     (fixnum? e)
-     (boolean? e)
-     (procedure? e)
-     (box? e)
-     (void? e)
-     (< e e)
-     boolean]
+  [e ::= (letrec ([x (λ (x ...) e)] ...) e) (e e ...) x
+         (begin e ... e) (void)
+         (let ([x e] ...) e)
+         (box e) (unbox e) (set-box! e e)
+         empty (pair e e) (first e) (second e)
+         fixnum (arith-op e e)
+         true false (if e e e)
+         (< e e) (eq? e e)
+         (tag-pred e)]
   [x ::= variable-not-otherwise-mentioned]
-  [fixnum ::= number]
+  [fixnum ::= integer]
+  [arith-op ::= + - * /]
+  [tag-pred ::= eq? pair? fixnum? boolean?]
   #:binding-forms
   (λ (x ...) e #:refers-to (shadow x ...))
   (letrec ([x any] ...) #:refers-to (shadow x ...)
           e #:refers-to (shadow x ...))
   (let ([x e_1] ...) e_2 #:refers-to (shadow x ...)))
+
+(define (int61? x) (<= (min-int 61) x (max-int 61)))
+(define (max-int word-size) (sub1 (expt 2 (sub1 word-size))))
+(define (min-int word-size) (* -1 (expt 2 (sub1 word-size))))
 
 #;(define-metafunction λiL
   [(subst-all () () any) any]

@@ -27,4 +27,5 @@ The semantics provides interesting insight into bootstrapping compilers, and may
 provide insights into the semantics of JIT compilation and macro systems.
 }
 
+@include-section{source.scrbl}
 @include-section{a-normal-form.scrbl}
