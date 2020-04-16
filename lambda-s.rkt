@@ -44,10 +44,6 @@
   [fixnum ::= integer]
   [arith-op ::= + - * /]
   [tag-pred ::= pair? fixnum? boolean?]
-
-  [S ::= ((l . v) ...)]
-  [l ::= (variable-prefix 'l)]
-  [v ::= fixnum true false empty (pair v v) (λ (x ...) e) (box v) l]
   #:binding-forms
   (λ (x ...) e #:refers-to (shadow x ...))
   (letrec ([x any] ...) #:refers-to (shadow x ...)
@@ -57,6 +53,11 @@
 (define (int61? x) (<= (min-int 61) x (max-int 61)))
 (define (max-int word-size) (sub1 (expt 2 (sub1 word-size))))
 (define (min-int word-size) (* -1 (expt 2 (sub1 word-size))))
+
+(define-extended-language λiL-eval λiL
+  [S ::= any] ; must be a dict of labels to values
+  [l ::= (variable-prefix l)]
+  [v ::= fixnum true false empty (pair v v) (λ (x ...) e) (box v) l])
 
 (define-metafunction λiL
   [(subst-all () () any) any]
@@ -70,28 +71,19 @@
       (set-box! x (add1 (unbox x)))
       (format-symbol "l~a" (unbox x)))))
 
-(define-metafunction λiL
-  [(is-box? v)
-   ])
-
-(define-metafunction λiL
-  [(is-pair? v)
-   ])
-
-(define-metafunction λiL
-  [(is-fixnum? v)
-   ])
-
-(define (box-error? v)
-  (or (not (redex-match? λiL-eval l (term v)))
+(define (box-error? S v)
+  (or (not (redex-match? λiL-eval l v))
       (not (redex-match? λiL-eval (box v)
-                         (dict-ref (term S) (term l))))))
+                         (dict-ref S v)))))
 
 (define (boolean-error? v)
   (not (redex-match? λiL-eval boolean v)))
 
 (define (pair-error? v)
-  (not (redex-match? λiL-eval (pair e_1 e_2) (term v))))
+  (not (redex-match? λiL-eval (pair e_1 e_2) v)))
+
+(define (fixnum-error? v)
+  (not (redex-match? λiL-eval fixnum v)))
 
 (require racket/dict)
 (define λi->
@@ -115,7 +107,7 @@
         (S_2 (let ([x l] ...) e))
 
         (where (l ...) ,(map fresh-label (term (x ...))))
-        (where S_2 ,(append S_1 (term ((l v) ...)))))
+        (where S_2 ,(append (term S_1) (term ((l v) ...)))))
 
    (--> (S (l v ...))
         (S (v_1 v ...))
@@ -134,7 +126,7 @@
         (S #t))
    (--> (S (boolean? v))
         (S #f)
-        (side-condition ,(boolean-error? (term v)))))
+        (side-condition (boolean-error? (term v))))
 
   ;; Boxes
   (--> (S (box e))
@@ -145,7 +137,7 @@
        (where (box v) ,(dict-ref (term S) (term l))))
   (--> (S (unbox v))
        (S (error))
-       (side-condition ,(box-error? (term v))))
+       (side-condition (box-error? (term S) (term v))))
   (--> (S_1 (set-box! l v))
        (S_2 (void))
        (where S_2 ,(dict-set (term S) (term l) (term (box v)))))
@@ -154,24 +146,24 @@
        (where (box v) ,(dict-ref (term S) (term l))))
   (--> (S (box? v))
        (S #f)
-       (side-condition ,(box-error? (term v))))
+       (side-condition (box-error? (term S) (term v))))
 
   ;; Pairs
   (--> (S (first (pair v_1 v_2)))
        (S v_1))
   (--> (S (first v))
        (S (error))
-       (side-condition ,(pair-error? (term v))))
+       (side-condition (pair-error? (term v))))
   (--> (S (second (pair v_1 v_2)))
        (S v_2))
   (--> (S (second v))
        (S (error))
-       (side-condition ,(pair-error? (term v))))
+       (side-condition (pair-error? (term v))))
   (--> (S (pair? (pair v_1 v_2)))
        (S #t))
   (--> (S (pair? v))
        (S #f)
-       (side-condition ,(pair-error? (term v))))
+       (side-condition (pair-error? (term v))))
 
   (--> (S (airth-op fixnum_1 fixnum_2))
        (S v)
@@ -179,15 +171,15 @@
 
   (--> (S (airth-op v_1 v_2))
        (S (error))
-       (side-condition ,(fixnum-error? (term v_1))))
+       (side-condition (fixnum-error? (term v_1))))
   (--> (S (airth-op v_1 v_2))
        (S (error))
-       (side-condition ,(fixnum-error? (term v_2))))
+       (side-condition (fixnum-error? (term v_2))))
   (--> (S (fixnum? fixnum_1))
        (S #t))
   (--> (S (fixnum? fixnum_1))
        (S #f)
-       (side-condition ,(fixnum-error? (term v_2)))))
+       (side-condition (fixnum-error? (term v_2))))))
 
 (define-term s-eg
   (let ([x (box 0)])
