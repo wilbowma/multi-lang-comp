@@ -243,7 +243,7 @@
                            #f
                            (even? (- n 1))))])
         (begin
-          (if (even? (fact 5))
+          (if (even? 1)
               (letrec ([length (λ (x)
                                  (letrec ([empty? (λ (x) (eq? x '()))])
                                    (if (pair? x)
@@ -252,7 +252,7 @@
                                            (+ 1 (length (cdr x))))
                                        (error))))])
                 (set-box! x (length (pair 1 '()))))
-              (set-box! x (pair 2 '())))
+              (set-box! x (pair (fact 5) '())))
           (unbox x))))))
 
 (test-match λiL e (term s-eg))
@@ -303,4 +303,4 @@
 
 (test-->> λi-> #:equiv (lambda (x y)
                          (alpha-equivalent? λiL (second x) y))
-          (term (() s-eg)) (term (pair 2 '())))
+          (term (() s-eg)) (term (pair 120 '())))
