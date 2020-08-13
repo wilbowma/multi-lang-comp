@@ -1,5 +1,6 @@
 #lang racket/base
 (require
+ "base.rkt"
  redex/reduction-semantics
  racket/list
  racket/dict)
@@ -34,7 +35,7 @@
 
 ; λiL is the λ-calculus internal language.
 ;; NOTE: whitespace sensitive for typesetting in the paper.
-(define-language λiL
+(define-extended-language λiL baseL
   [e ::= (letrec ([x (λ (x ...) e)] ...) e) (e e ...) x
      (let ([x e] ...) e) (error)
      (begin e ... e) (void)
@@ -44,28 +45,17 @@
      #t #f (if e e e)
      (tag-pred e)]
   [x ::= variable-not-otherwise-mentioned]
-  [fixnum ::= integer]
-  [arith-op ::= + - * / <]
-  [binop ::= arith-op eq?]
-  [tag-pred ::= pair? fixnum? boolean?]
   #:binding-forms
   (λ (x ...) e #:refers-to (shadow x ...))
   (letrec ([x any] ...) #:refers-to (shadow x ...)
           e #:refers-to (shadow x ...))
   (let ([x e_1] ...) e_2 #:refers-to (shadow x ...)))
 
-(define (int61? x) (<= (min-int 61) x (max-int 61)))
-(define (max-int word-size) (sub1 (expt 2 (sub1 word-size))))
-(define (min-int word-size) (* -1 (expt 2 (sub1 word-size))))
-
 (define-extended-language λiL-eval λiL
-  [S ::= any] ; must be a dict of labels to values
-  [l ::= (variable-prefix lb)]
+  [S ::= env] ; must be a dict of labels to values
   [E ::= hole
-     #;(letrec ([x v] ...) E)
      (v ... E e ...)
      (let ([x v] ... [x E] [x e] ...) e)
-     #;(let ([x v] ...) E)
      (begin v ... E e ...)
      (box E)
      (unbox E)
@@ -81,38 +71,18 @@
      (tag-pred E)]
   [v ::= fixnum #t #f '() (pair v v) (λ (x ...) e) (void) l])
 
-(define-metafunction λiL
-  [(subst-all () () any) any]
-  [(subst-all (x_1 x ...) (e_1 e ...) any)
-   (subst-all (x ...) (e ...) (substitute any x_1 e_1))])
-
-(require racket/syntax)
-(define fresh-label
-  (let ([x (box 0)])
-    (lambda ([name ""])
-      (set-box! x (add1 (unbox x)))
-      (format-symbol "lb~a~a" name (unbox x)))))
+(define-metafunction λiL-eval
+  store-extend : S (l v) ... -> S
+  [(store-extend any ...)
+   (env-extend any ...)])
 
 (define (box-error? S v)
   (or (not (redex-match? λiL-eval l v))
       (not (redex-match? λiL-eval (box v)
                          (dict-ref S v)))))
 
-(define (boolean-error? v)
-  (not (redex-match? λiL-eval boolean v)))
-
 (define (pair-error? v)
   (not (redex-match? λiL-eval (pair e_1 e_2) v)))
-
-(define-metafunction λiL-eval
-  fresh-labels : x ... -> (l ...)
-  [(fresh-labels x ...)
-   ,(map fresh-label (term (x ...)))])
-
-(define-metafunction λiL-eval
-  store-extend : S (l v) ... -> S
-  [(store-extend S (l v) ...)
-   ,(append (term S) (term ((l . v) ...)))])
 
 ;; NOTE: These are split-up to make type setting easier.
 (define λi->composition
@@ -136,8 +106,7 @@
 
 (define-metafunction λiL-eval
   store-ref : S l -> v
-  [(store-ref S l)
-   ,(dict-ref (term S) (term l))])
+  [(store-ref S l) (env-ref S l)])
 
 (define λi->admin
   (reduction-relation
@@ -225,28 +194,6 @@
   (--> (S (in-hole E (pair? v)))
        (S (in-hole E #f))
        (side-condition (pair-error? (term v))))))
-
-(define (fixnum-error? v)
-  (not (redex-match? λiL-eval fixnum v)))
-
-; For some reason, eval wouldn't work. *shrug*.
-(define (arith-op->proc v)
-  (case v
-    [(-) -]
-    [(+) +]
-    [(*) *]
-    [(/) /]
-    [(<) <]))
-
-(define-metafunction λiL-eval
-  denote : arith-op v ... -> v
-  [(denote arith-op v ...)
-   ,(apply (arith-op->proc (term arith-op)) (term (v ...)))])
-
-(define-metafunction λiL-eval
-  non-fixnum? : v -> boolean
-  [(non-fixnum? v)
-   ,(fixnum-error? (term v))])
 
 (define λi->arith
   (reduction-relation
