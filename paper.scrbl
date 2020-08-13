@@ -14,15 +14,18 @@ language.
 The compiler performs the A-normal-form translation, closure conversion, heap
 allocation and representation specification, hoisting, and code generation.
 
-Contrary to expectation, the compiler is not a translation between languages.
-Instead, the compiler is specified as a reduction relation in a multi-language
-semantics.
-Normalization of the reduction relation performs compilation.
+The novelity in the design is that the compiler is not a translation between
+languages.
+Instead, the compiler is reduction relation in a multi-language semantics.
+Normalization of the cross-language redexes performs ahead-of-time (AOT)
+compilation.
+Evaluation in the multi-language can be see as a specification for just-in-time
+(JIT) compilation.
 
 Formalizing the compiler as a multi-language semantics provides interesting
-semantic insights and presentation benefits.
-For example, compiler correctness is strong normalization in the source/target
-multi-language semantics.
+semantic insights, presentation benefits, and verification benefit.
+For example, (whole-program) compiler correctness is strong normalization in the
+source/target multi-language semantics.
 The semantics provides interesting insight into bootstrapping compilers, and may
 provide insights into the semantics of JIT compilation and macro systems.
 }
