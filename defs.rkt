@@ -35,7 +35,8 @@
 
 (*use-cache?* #f)
 (define source-lang "Scheme-ish")
-(define anf-lang (list "λ" (elem #:style 'superscript "A")))
+(define anf-lang (elem "λ" (elem #:style 'superscript "A")))
+(define anf-multi-lang (elem "λ" (elem #:style 'superscript "→a")))
 
 (set-arrow-pict!
  '-->
@@ -43,6 +44,13 @@
    (with-paper-rewriters/proc
      (lambda ()
        (text "→" (default-style) (default-font-size))))))
+
+(set-arrow-pict!
+ '-->a
+ (lambda ()
+   (with-paper-rewriters/proc
+     (lambda ()
+       (text "→ᵃ" (default-style) (default-font-size))))))
 
 (define todo margin-note)
 

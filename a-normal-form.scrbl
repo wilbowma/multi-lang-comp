@@ -23,7 +23,7 @@ For brevity, we take some liberties in the presentation of future multi-language
 pairs.
 
 @section{ANF Language}
-@figure["fig:anf-syntax" @~a{@|anf-lang| Syntax}
+@figure["fig:anf-syntax" @elem{@|anf-lang| Syntax}
   (render-language λaL #:nts '(V n e))
 ]
 
@@ -31,8 +31,8 @@ We specify the target language as essentially the source language but with the
 syntax restricted to A-normal form.
 This is defined in @Figure-ref{fig:anf-syntax}.
 
-ANF specifies a syntactic distinction between values @render-src[v],
-computations @render-src[n], and configurations @render-src[e].
+ANF specifies a syntactic distinction between values @render-src[V],
+computations @render-src[N], and configurations @render-src[M].
 We can consider the form as a canonicalized monadic form for the continuation
 monad, where @tt{bind} is implemented with @render-src[let] and
 @render-src[begin] and all @tt{bind}s are left-associated, computations are
@@ -64,8 +64,26 @@ compiler does not need to change in order to change evaluation strategy.
 @todo{Is it evaluation order that is explicit and not control flow? Need to sort
 that out.}
 
-@section{A-reduction}
-@figure["fig:a-red" @~a{The A-reductions}
+@section{The @|source-lang|/@|anf-lang| multi-language}
+@(require
+  (only-in redex/pict extend-language-show-union extend-language-show-extended-order))
+@figure["fig:anf-multi-syn" @elem{@|anf-multi-lang| Syntax (excerpts)}
+  (parameterize ([extend-language-show-union #t]
+                 [extend-language-show-extended-order #t])
+    (render-language ANFL #:nts '(E)))
+]
+
+We define the multi-language @|anf-multi-lang| by merging the syntax of
+@|source-lang| and @|anf-lang|.
+First, we introduce tagged non-terminals: @render-term[ANFL S.e] for purely
+source and @render-term[ANFL T.M] for purely target terms.
+Then, we inject all @|source-lang| @render-src[e]'s and all @|anf-lang|
+@render-term[λaL M]'s into a single non-terminal, @render-term[ANFL e].
+This non-terminal is untagged, and can be considered as the untagged union of
+the the two tagged non-terminals.
+
+@section{A-reductions}
+@figure["fig:a-red" @elem{The A-reductions}
   (render-reduction-relation anf-> #:style 'horizontal)
 ]
 
