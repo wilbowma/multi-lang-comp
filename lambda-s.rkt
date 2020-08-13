@@ -33,6 +33,7 @@
   (let ([x e_1] ...) e_2 #:refers-to (shadow x ...)))
 
 ; λiL is the λ-calculus internal language.
+;; NOTE: whitespace sensitive for typesetting in the paper.
 (define-language λiL
   [e ::= (letrec ([x (λ (x ...) e)] ...) e) (e e ...) x
      (let ([x e] ...) e) (error)
@@ -61,10 +62,10 @@
   [S ::= any] ; must be a dict of labels to values
   [l ::= (variable-prefix lb)]
   [E ::= hole
-     (letrec ([x v] ...) E)
+     #;(letrec ([x v] ...) E)
      (v ... E e ...)
      (let ([x v] ... [x E] [x e] ...) e)
-     (let ([x v] ...) E)
+     #;(let ([x v] ...) E)
      (begin v ... E e ...)
      (box E)
      (unbox E)
@@ -103,24 +104,22 @@
 (define (pair-error? v)
   (not (redex-match? λiL-eval (pair e_1 e_2) v)))
 
-(define (fixnum-error? v)
-  (not (redex-match? λiL-eval fixnum v)))
+(define-metafunction λiL-eval
+  fresh-labels : x ... -> (l ...)
+  [(fresh-labels x ...)
+   ,(map fresh-label (term (x ...)))])
 
-; For some reason, eval wouldn't work. *shrug*.
-(define (arith-op->proc v)
-  (case v
-    [(-) -]
-    [(+) +]
-    [(*) *]
-    [(/) /]
-    [(<) <]))
+(define-metafunction λiL-eval
+  store-extend : S (l v) ... -> S
+  [(store-extend S (l v) ...)
+   ,(append (term S) (term ((l . v) ...)))])
 
-(define λi->
+;; NOTE: These are split-up to make type setting easier.
+(define λi->composition
   (reduction-relation
    λiL-eval
    #:domain (S e)
    #:codomain (S e)
-   ;#:arrow ==>
 
    (--> (S (in-hole E (let ([x v] ...) e)))
         (S (in-hole E (subst-all (x ...) (v ...) e))))
@@ -128,23 +127,39 @@
    (--> (S_1 (in-hole E (letrec ([x v] ...) e)))
         (S_2 (in-hole E (subst-all (x ...) (l ...) e)))
 
-        (where (l ...) ,(map fresh-label (term (x ...))))
+        (where (l ...) (fresh-labels x ...))
         (where (v_1 ...) ((subst-all (x ...) (l ...) v) ...))
-        ; A secret dict-merge option, if you break interfaces.
-        (where S_2 ,(append (term S_1) (term ((l . v_1) ...)))))
+        (where S_2 (store-extend S_1 (l v_1) ...)))
+
+   (--> (S (in-hole E (begin v ... e)))
+        (S (in-hole E e)))))
+
+(define-metafunction λiL-eval
+  store-ref : S l -> v
+  [(store-ref S l)
+   ,(dict-ref (term S) (term l))])
+
+(define λi->admin
+  (reduction-relation
+   λiL-eval
+   #:domain (S e)
+   #:codomain (S e)
 
    (--> (S (in-hole E (l v ..._1)))
         (S (in-hole E (subst-all (x ...) (v ...) e)))
-        (where (λ (x ..._1) e) ,(dict-ref (term S) (term l))))
+        (where (λ (x ..._1) e) (store-ref S l)))
 
    (--> (S (in-hole E (l v ...)))
         (S (error))
-        (where (λ (x ...) e) ,(dict-ref (term S) (term l)))
+        (where (λ (x ...) e) (store-ref S l))
         (side-condition (not (eq? (length (term (x ...)))
-                                  (length (term (v ...)))))))
+                                  (length (term (v ...)))))))))
 
-   (--> (S (in-hole E (begin v ... e)))
-        (S (in-hole E e)))
+(define λi->bools
+  (reduction-relation
+   λiL-eval
+   #:domain (S e)
+   #:codomain (S e)
 
    ;; Booleans
    (--> (S (in-hole E (if #f e_1 e_2)))
@@ -159,7 +174,13 @@
         (S (in-hole E #t)))
    (--> (S (in-hole E (boolean? v)))
         (S (in-hole E #f))
-        (side-condition (boolean-error? (term v))))
+        (side-condition (boolean-error? (term v))))))
+
+(define λi->boxes
+  (reduction-relation
+   λiL-eval
+   #:domain (S e)
+   #:codomain (S e)
 
   ;; Boxes
   (--> (S (in-hole E (box v)))
@@ -180,7 +201,13 @@
        (where (box v) ,(dict-ref (term S) (term l))))
   (--> (S (in-hole E (box? v)))
        (S (in-hole E #f))
-       (side-condition (box-error? (term S) (term v))))
+       (side-condition (box-error? (term S) (term v))))))
+
+(define λi->pairs
+  (reduction-relation
+   λiL-eval
+   #:domain (S e)
+   #:codomain (S e)
 
   ;; Pairs
   (--> (S (in-hole E (first (pair v_1 v_2))))
@@ -197,36 +224,79 @@
        (S (in-hole E #t)))
   (--> (S (in-hole E (pair? v)))
        (S (in-hole E #f))
-       (side-condition (pair-error? (term v))))
+       (side-condition (pair-error? (term v))))))
+
+(define (fixnum-error? v)
+  (not (redex-match? λiL-eval fixnum v)))
+
+; For some reason, eval wouldn't work. *shrug*.
+(define (arith-op->proc v)
+  (case v
+    [(-) -]
+    [(+) +]
+    [(*) *]
+    [(/) /]
+    [(<) <]))
+
+(define-metafunction λiL-eval
+  denote : arith-op v ... -> v
+  [(denote arith-op v ...)
+   ,(apply (arith-op->proc (term arith-op)) (term (v ...)))])
+
+(define-metafunction λiL-eval
+  non-fixnum? : v -> boolean
+  [(non-fixnum? v)
+   ,(fixnum-error? (term v))])
+
+(define λi->arith
+  (reduction-relation
+   λiL-eval
+   #:domain (S e)
+   #:codomain (S e)
 
   ;; Arith
   (--> (S (in-hole E (arith-op fixnum_1 fixnum_2)))
        (S (in-hole E v))
-       (where v ,((arith-op->proc (term arith-op))
-                  (term fixnum_1) (term fixnum_2))))
+       (where v (denote arith-op fixnum_1 fixnum_2)))
 
   (--> (S (in-hole E (arith-op v_1 v_2)))
        (S (error))
-       (side-condition (fixnum-error? (term v_1))))
+       (side-condition (term (non-fixnum? v_1))))
   (--> (S (in-hole E (arith-op v_1 v_2)))
        (S (error))
-       (side-condition (fixnum-error? (term v_2))))
+       (side-condition (term (non-fixnum? v_1))))
   (--> (S (in-hole E (fixnum? fixnum_1)))
        (S (in-hole E #t)))
-  (--> (S (in-hole E (fixnum? fixnum_1)))
+  (--> (S (in-hole E (fixnum? v)))
        (S (in-hole E #f))
-       (side-condition (fixnum-error? (term v_2))))
+       (side-condition (term (non-fixnum? v))))))
 
-  ;; Eq
-  (--> (S (in-hole E (eq? v v)))
-       (S (in-hole E #t)))
-  (--> (S (in-hole E (eq? v_!_1 v_!_1)))
-       (S (in-hole E #f)))
+(define λi->eq
+  (reduction-relation
+   λiL-eval
+   #:domain (S e)
+   #:codomain (S e)
 
-  ;; Damn you Redex!
-  #;with
-  #;[(==> (S1 (in-hole E e1)) (S2 (in-hole e2)))
-   (--> (S1 e1) (S2 e2))]))
+   ;; Eq
+   (--> (S (in-hole E (eq? v v)))
+        (S (in-hole E #t)))
+   (--> (S (in-hole E (eq? v_!_1 v_!_1)))
+        (S (in-hole E #f)))))
+
+(define λi->
+  (union-reduction-relations
+   λi->composition
+   λi->admin
+   λi->bools
+   λi->boxes
+   λi->pairs
+   λi->arith
+   λi->eq))
+
+(define-metafunction λiL-eval
+  eval-λiL : e -> v
+  [(eval-λiL e)
+   ,(second (car (apply-reduction-relation* λi-> (term (() e)))))])
 
 (define-term s-eg
   (let ([x (box 0)])

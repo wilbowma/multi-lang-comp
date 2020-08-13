@@ -1,16 +1,25 @@
 #lang scribble/acmart @acmsmall @nonacm @screen
 @(require
-   "lambda-s.rkt"
-   "defs.rkt")
+  (only-in scribble/manual deftech tech)
+  "lambda-s.rkt"
+  "defs.rkt")
 
+@(require with-cache)
+@(*use-cache?* #f)
+@(require (only-in redex/pict render-term/pretty-write) (only-in redex/reduction-semantics term))
 @(define-syntax-rule (render-src-eg e)
-   (nested #:style 'code-inset (render-src e)))
+   (nested #:style 'code-inset
+     (para "Example:")
+     (tabular #:row-properties '((top)) (list (list "> " (render-src e))))
+     (with-paper-rewriters (render-term/pretty-write λiL (term (eval-λiL e))))))
 
 @title{Source Language: @source-lang}
 We start by briefly introducing the source language, @|source-lang|.
 The language includes a handful of standard features and is loosely inspired by
 Scheme.
-Each feature is choosen to make our compiler more @emph{interesting}.
+Each feature is choosen to make our compiler more @deftech{interesting}, meaning
+realistic compilation to an assembly language requires additional non-trivial
+compilation passes.
 
 @section{Syntax}
 We present the syntax of @source-lang in @Figure-ref{fig:src-syntax}
@@ -19,17 +28,16 @@ We present the syntax of @source-lang in @Figure-ref{fig:src-syntax}
   (render-language λiL #:nts '(e x tag-pred arith-op))
 ]
 
-Mutually recursive multi-arity functions are introduced by by
-@render-src{letrec}.
+Mutually recursive multi-arity functions are introduced by @render-src{letrec}.
 For simplicity of presentation, we require functions are named; it is simple to
 translate from a language with anonymous functions.
 
 We include an error primitive, @render-src[error], which simply raises an
 uncatachable error with no associated information.
-It would make our compiler more interesting to include a catchable error, but
-maybe too interesting for our purpose.
+It would make our compiler more @tech{interesting} to include a catchable error,
+but maybe too interesting for our purposes.
 Adding associated information to the error does not make the compiler more
-interesting.
+@tech{interesting}.
 
 Mutable references are introduced by @render-src[box], updated with
 @render-src[set-box!], and dereferenced by @render-src[unbox].
@@ -37,19 +45,19 @@ Purely to support imperative features, we include @render-src[(void)] and the
 @render-src[begin] form.
 @render-src[begin] allows executing a sequence of imperative expressions
 without @render-src[let]-binding their unimportant result, and
-@render-src[(void)] represents the value implicitly returned by an imperative
-primitive.
+@render-src[(void)] represents the unit value, and is implicitly returned by an
+imperative primitive.
 Mutable reference complicate several standard compiler translations, such as
 ANF, compared to their usual presentation in the literature.
 
-Immutable pairs are introduced with @render-src[pair], and destructed
-with @render-src[first] and @render-src[second].
+Immutable pairs are introduced with @render-src[pair] and @render-src['()] (the
+empty pair), and destructed with @render-src[first] and @render-src[second].
 We depart from the usual Scheme names, @tt{cons}, @tt{car}, and @tt{cdr}, that
 serve only to evoke past mistakes and confuse the uninitiated.
 Pairs serve to represent arbitrary sized, structured, non-immediate data that
 must be heap allocated by the compiler.
 Mutable references already force us to deal with allocation, but are
-insufficient to represent interesting data structures.
+insufficient to represent @tech{interesting} data structures.
 
 The language supports literal fixed-sized integers, @render-src[fixnum]s, and a
 few arithmetic operations, @render-src{arith-ops}: addition, subtraction,
@@ -59,33 +67,53 @@ object tagging, but this is not important for our model.
 We do not specify their range, but consider the language parameterized by
 some @render-src[fixnum] range.
 
-The language includes booleans literals @render-src[true] and
-@render-src[false], eliminated by @render-src[if].
+The language includes booleans literals @render-src[#t] for true and
+@render-src[#f] for false, eliminated by @render-src[if].
 Booleans introduce a second immediate data type, and branching introduces minor
 but non-trivial complications in some passes.
-Both are useful for exercising our model compiler.
+Both are useful for making the model compiler more @tech{interesting}.
 We also include two predicates, @render-src[<] for comparing
 @render-src[fixnum]s, and @render-src[eq?] for comparing two values for
-identity (think pointer equality rather than structural equality).
+identity (pointer equality rather than structural equality).
 
 Finally, we add predicates for checking the tag on each of our data types.
 This forces our compiler to model object tagging, a detail often ignored in
-models.
+models, and definitely @tech{interesting}.
+
+The binding forms, @render-src[letrec], @render-src[let], and @render-src[λ],
+support multi-arity bindings that are assumed to be disjoint.
 
 @section{Static Semantics}
-We could easily add an ML-style type system if we wanted to study compilation
-with types, but that is not the focus of the present work, so we do not.
+We could add an ML-style type system if we wanted to study compilation with
+types, but that is not the focus of the present work, so we do not.
 
-We assume that are programs are well-bound, implementing The Scheme Type system.
-All operations are dynamically checked to ensure type safety.
+All programs must be well bound, implementing The Scheme Type system.
+This is completely standard and we omit it for brevity.
 
 @section{Dynamic Semantics}
+@figure["fig:src-red-comp" @~a{@|source-lang| Reduction (composition rules)}
+  (render-reduction-relation λi->composition #:style 'horizontal)
+]
+
+@figure["fig:src-red-arith" @~a{@|source-lang| Reduction (arithmetic rules)}
+(render-reduction-relation λi->arith #:style 'horizontal)
+]
+
+@figure["fig:src-pairs" @~a{@|source-lang| Reduction (pair rules)}
+(render-reduction-relation λi->pairs #:style 'horizontal)
+]
+
 The language has completely standard left-to-right call-by-value operational
 semantics.
+All operations are dynamically checked to ensure type safety.
 We present the reduction system using evaluation context@todo{cite}.
 @render-src[error] simply throws away the the current evaluation context.
 We use a store to model @render-src[letrec]@todo{cite}, in addition to mutable
-references.
+references, which is entirely standard.
+
+For brevity, we give some representative examples rules, but relegate the
+complete definition the appendix.
+
 
 @section{Examples}
 The language allows us to implement favorite example programs from the compilers
@@ -99,17 +127,18 @@ literature, such as factorial:
   (fact 5))
 ]
 
+
 Or even and odd:
 
 @render-src-eg[
-(letrec ([not (λ (n) (if n false true))]
+(letrec ([not (λ (n) (if n #t #t))]
          [even (λ (n)
                  (if (eq? n 0)
-                     true
+                     #t
                      (not (odd (- n 1)))))]
          [odd (λ (n)
                 (if (eq? n 0)
-                    false
+                    #f
                     (not (even (- n 1)))))])
   (pair (even 0) (pair (odd 0) (pair (even 1) (odd 1)))))
 ]
@@ -121,14 +150,20 @@ Mutable references lets us implement the standard example of two
 hopefully-observationally-equivalent counters that use local state.
 
 @render-src-eg[
-(letrec ([counter (let ([b (box 0)])
-                    (λ () (begin
-                            (set-box! b (+ 1 (unbox b)))
-                            (unbox b))))]
+(let ([counter (let ([b (box 0)])
+                 (letrec ([counter-proc
+                           (λ ()
+                             (begin
+                               (set-box! b (+ 1 (unbox b)))
+                               (unbox b)))])
+                   counter-proc))]
          [slow-counter (let ([b (box 0)])
-                           (λ () (begin
-                                   (set-box! b (+ 2 (unbox b)))
-                                   (/ (unbox b) 2))))])
+                         (letrec ([slow-counter-proc
+                                   (λ ()
+                                     (begin
+                                       (set-box! b (+ 2 (unbox b)))
+                                       (/ (unbox b) 2)))])
+                           slow-counter-proc))])
   (pair (counter)
         (pair (counter)
               (pair (slow-counter) (slow-counter)))))

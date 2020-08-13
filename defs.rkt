@@ -34,6 +34,13 @@
 
 (define source-lang "Scheme-ish")
 
+(set-arrow-pict!
+ '-->
+ (lambda ()
+   (with-paper-rewriters/proc
+     (lambda ()
+       (text "→" (default-style) (default-font-size))))))
+
 (define todo margin-note)
 
 (define (Figure-ref e)
@@ -41,6 +48,9 @@
 
 (define-syntax-rule (render-language e ...)
   (with-paper-rewriters (render-language-cache e ...)))
+
+(define-syntax-rule (render-reduction-relation e ...)
+  (with-paper-rewriters (render-reduction-relation-cache e ...)))
 
 (define-syntax-rule (render-term e ...)
   (with-paper-rewriters (render-term-cache e ...)))
