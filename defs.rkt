@@ -23,7 +23,8 @@
   link-render-style
   current-link-render-style)
  (only-in scriblib/figure [Figure-ref pre:Figure-ref])
- (except-in scriblib/figure Figure-ref))
+ (except-in scriblib/figure Figure-ref)
+ with-cache)
 
 (require/expose pict/private/pict (converted-pict-parent converted-pict?))
 
@@ -32,7 +33,9 @@
  ~a
  (all-defined-out))
 
+(*use-cache?* #f)
 (define source-lang "Scheme-ish")
+(define anf-lang (list "λ" (elem #:style 'superscript "A")))
 
 (set-arrow-pict!
  '-->

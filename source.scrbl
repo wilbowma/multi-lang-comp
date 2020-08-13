@@ -4,8 +4,6 @@
   "lambda-s.rkt"
   "defs.rkt")
 
-@(require with-cache)
-@(*use-cache?* #f)
 @(require (only-in redex/pict render-term/pretty-write) (only-in redex/reduction-semantics term))
 @(define-syntax-rule (render-src-eg e)
    (nested #:style 'code-inset
