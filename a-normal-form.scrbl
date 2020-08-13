@@ -82,6 +82,13 @@ Then, we inject all @|source-lang| @render-src[e]'s and all @|anf-lang|
 This non-terminal is untagged, and can be considered as the untagged union of
 the the two tagged non-terminals.
 
+In this multi-language, we define reduction as applying any of the
+@|source-lang| reductions to @render-term[ANFL S.e] redex under any context, and
+any of the @|anf-lang| reductions to any @render-term[ANFL T.e] under any
+context.
+
+Unlike traditional multi-language semantics, we have no explicit boundary terms.
+
 @section{A-reductions}
 @figure["fig:a-red" @elem{The A-reductions}
   (render-reduction-relation anf-> #:style 'horizontal)

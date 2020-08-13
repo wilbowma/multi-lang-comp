@@ -24,6 +24,7 @@
   [T.x ::= .... ]
   [S.x ::= .... ]
   [S.e ::= .... ]
+  [e ::= S.e T.e]
 
   [C ::= (compatible-closure-context S.e)]
   [E ::= hole
@@ -74,9 +75,9 @@
     (where (E_!_1 E_!_1) (hole E)))
 
    (-->a
-    (in-hole E (if T.n S.e_1 S.e_2))
+    (in-hole E (if T.V S.e_1 S.e_2))
     (letrec ([j (λ (x) (in-hole E x))])
-      (if T.n (j S.e_1) (j S.e_2)))
+      (if T.V (j S.e_1) (j S.e_2)))
     (fresh j)
     (fresh x)
     (where (E_!_1 E_!_1) (hole E)))
@@ -151,14 +152,6 @@
      anf->+
      #:equiv alpha-equivalent?
      (term ((if ((x 5) 4) meow bark) 5 2))
-
-     (term
-      (let ((x1 (x 5)))
-        (letrec ((j (λ (x2) (x2 5 2))))
-          (let ((x3 (x1 4)))
-            (if x3
-                (j meow)
-                (j bark))))))
 
      (term
       (let ((x1 (x 5)))
