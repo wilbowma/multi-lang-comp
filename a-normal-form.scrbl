@@ -11,16 +11,12 @@ in the syntax.
 Most compiler correctness papers use CPS as this first pass@todo{cite f-to-tal,
 perconti ahmed, pilsner?, kennedy?, ...}.
 We use ANF since there is already a presentation of ANF as a reduction relation,
-namely, the A-reductions@todo{cite amr, flannegan}.
+namely, the A-reductions@todo{cite amr, flannegan}, which served as inspiration
+for the present work and a good starting point.
 
 We extend the A-reductions to support some Scheme-like imperative features.
-This is a contribution insofar as it has not in published models, although the
-reduction are probably known to compiler implementers.
-
-As this is our first pass, we take care to carefully define the source/target
-multi-language.
-For brevity, we take some liberties in the presentation of future multi-language
-pairs.
+This is a contribution insofar as it has not appeared in published models,
+although the reduction are probably known to compiler implementers.
 
 @section{ANF Language}
 @figure["fig:anf-syntax" @elem{@|anf-lang| Syntax}
@@ -31,16 +27,25 @@ We specify the target language as essentially the source language but with the
 syntax restricted to A-normal form.
 This is defined in @Figure-ref{fig:anf-syntax}.
 
-ANF specifies a syntactic distinction between values @render-src[V],
-computations @render-src[N], and configurations @render-src[M].
-We can consider the form as a canonicalized monadic form for the continuation
-monad, where @tt{bind} is implemented with @render-src[let] and
-@render-src[begin] and all @tt{bind}s are left-associated, computations are
-monadic operations, and @tt{return} is implicit.
+ANF specifies a syntactic distinction between values @render-term[λaL V],
+computations @render-term[λaL n], and configurations @render-term[λaL e].
 All elimination forms work directly on values rather than arbitrary expressions,
-so control must be manually composed using @render-src[let] and
-@render-src[begin].
-@todo{It's not canonical; begin can have nested expressions in it. Maybe you mean canonical w.r.t. a specific reduction?}
+so control must be manually composed using @render-term[λaL let] and
+@render-term[λaL begin].
+
+We can consider ANF as normalized monadic form for the continuation monad.
+The monad implements @render-term[λaL bind] as @render-term[λaL let] and
+@render-term[λaL begin] and @render-term[λaL return] is implicit. The form is
+normal with respect the following commuting conversion.
+@(require redex/reduction-semantics)
+@render-reduction-relation[
+  (reduction-relation
+    λaL
+    (--> (bind ([x_1 (bind ([x_2 n_2]) e_2)]) e_1)
+         (bind ([x_2 n_2]) (bind ([x_1 e_2]) e_1))))
+  #:style 'horizontal
+]
+@todo{It's not canonical; Maybe you mean canonical w.r.t. a specific reduction?}
 
 @section{Dynamic Semantics}
 Since control flow is encoded in the syntax, the semantics are straight-forward
