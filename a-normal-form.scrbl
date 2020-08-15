@@ -70,7 +70,7 @@ that out.}
 @figure["fig:anf-multi-syn" @elem{@|anf-multi-lang| Syntax (excerpts)}
   (parameterize ([extend-language-show-union #t]
                  [extend-language-show-extended-order #t])
-    (render-language ANFL #:nts '(T Ev En Em C T.e T.n T.V S.e e)))
+    (render-language ANFL #:nts '(T T.e T.n T.V S.e e)))
 ]
 
 We define the multi-language @|anf-multi-lang| by merging the syntax of

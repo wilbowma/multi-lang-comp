@@ -69,7 +69,8 @@
      (binop E e)
      (binop v E)
      (tag-pred E)]
-  [v ::= fixnum #t #f '() (pair v v) (λ (x ...) e) (void) l])
+  ;; NOTE: Need vars as variable if we want to reuse in ANF def.
+  [v ::= fixnum #t #f '() (pair v v) (λ (x ...) e) (void) l x])
 
 (define-metafunction λiL-eval
   store-extend : S (l v) ... -> S

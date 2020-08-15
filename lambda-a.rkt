@@ -20,6 +20,34 @@
      (begin n ... e)
      (if V e e)
      n]
+
+  #;[Cm ::= (compatible-closure-context e)]
+  #;[Cn ::= (compatible-closure-context e #:wrt n)]
+  #;[Cv ::= (compatible-closure-context e #:wrt V)]
+  [Cv ::= hole
+      (V ... Cv V ...)
+      (primop V ... Cv V ...)
+      (let ([x n] ... [x Cv] [x n] ...) e)
+      (begin n ... Cv n ... e)
+      (if Cv e e)]
+  [Cn ::= hole
+      (let ([x n] ... [x Cn] [x n] ...) e)
+      (let ([x n] ...) Cn)
+      (letrec ([x n] ...) Cn)
+      (begin n ... Cn n ... e)
+      (begin n ... Cn)]
+  [Cm ::= hole
+     (let ([x n] ...) Cm)
+     (letrec ([x (λ (x ...) e)]
+              ...
+              [x (λ (x ...) Cm)]
+              [x (λ (x ...) e)]
+              ...) e)
+     (letrec ([x (λ (x ...) e)] ...) Cm)
+     (begin n ... Cm)
+     (if V Cm e)
+     (if V e Cm)]
+
   #:binding-forms
   (λ (x ...) e #:refers-to (shadow x ...))
   (letrec ([x any] ...) #:refers-to (shadow x ...)
