@@ -52,6 +52,13 @@
      (lambda ()
        (text "→ᵃ" (default-style) (default-font-size))))))
 
+(set-arrow-pict!
+ '-->st
+ (lambda ()
+   (with-paper-rewriters/proc
+     (lambda ()
+       (text "→ˢᵗ" (default-style) (default-font-size))))))
+
 (define todo margin-note)
 
 (define (Figure-ref e)

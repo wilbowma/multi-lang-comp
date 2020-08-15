@@ -14,7 +14,7 @@
 
 ; Design pattern for a multi-language with syntactic distinction between source
 ; and target, but also a combined syntax.
-(define-union-language tagANFL (S. λiL-eval) (T. λaL))
+(define-union-language tagANFL (S. λiL-eval) (T. λaL-eval))
 (define-extended-language ANFL tagANFL
   ; NOTE: Hacks to get type setting to work
   [T.x ::= .... ]
@@ -29,8 +29,28 @@
   [primop ::= T.primop S.primop]
   [e ::= S.e T.e]
 
-  [T ::= (in-hole C (TS C))]
-  [C ::= T.Cm])
+  [T ::= (in-hole T.Cv (TS T.Cm))]
+
+  [C ::= T.Cv]
+
+  [E ::= S.E T.E (TS S.E) (ST T.E)]
+
+  [S ::= S.S]
+  [arith-op ::= S.arith-op]
+  [binop ::= S.binop]
+  [tag-pred ::= S.tag-pred]
+  [v ::= S.v]
+  [env ::= S.env]
+  [fixnum ::= S.fixnum]
+  [l ::= S.l]
+
+  [V ::= T.V] ; shouldn't be needed
+  [n ::= T.n] ; shouldn't be needed
+  [Cm ::= T.Cm]
+  [Cn ::= T.Cn]
+  [Cv ::= T.Cv]
+
+  )
 
 (define anf->
   (reduction-relation
@@ -98,6 +118,23 @@
    (-->st (in-hole C (TS (ST e))) (in-hole C e))
    (-->st (in-hole C (ST (TS e))) (in-hole C e))))
 
+#;(define embed->
+    (reduction-relation
+     ANFL
+     ;#:domain S.e
+     ;#:codomain T.e
+     #:arrow -->embed
+
+     (-->embed S.e (TS S.e))))
+
+(define anf-eval->+
+  (union-reduction-relations
+   (context-closure λi-> ANFL S.E)
+   (context-closure λa-> ANFL T.E)
+   ;(context-closure embed-> ANFL hole)
+   (context-closure anf-> ANFL T)
+   (context-closure st-> ANFL C)))
+
 (define anf->+
   (union-reduction-relations
    (context-closure anf-> ANFL T)
@@ -115,7 +152,7 @@
       (step (sub1 n) (car (apply-reduction-relation anf->+ x)))))
 
 (module+ test
-  (parameterize ([default-language ANFL])
+  (parameterize ([default-language λaL])
     (test-->>
      anf->+
      #:equiv alpha-equivalent?
@@ -147,6 +184,28 @@
             (if x3
                 (j meow)
                 (j bark)))))))
+    (test-->>
+     anf->+
+     #:equiv alpha-equivalent?
+     (term (TS (+ (if (let ([x #t]) x) 6 7) 1)))
+
+     (term
+      (let ([x #t])
+        (letrec ([j (λ (x) (+ x 1))])
+          (if x (j 6) (j 7))))))
+
+    (test-->>
+     anf-eval->+
+     #:equiv alpha-equivalent?
+     (term (TS (+ (if (let ([x #t]) x) 6 7) 1)))
+
+     (term 7)
+
+     (term
+      (let ([x #t])
+        (letrec ([j (λ (x) (+ x 1))])
+          (if x (j 6) (j 7))))))
+
     #;(test-->>
        cc->+
        #:equiv alpha-equivalent?
