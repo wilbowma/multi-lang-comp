@@ -35,6 +35,9 @@
 
   [E ::= S.E T.E (TS S.E) (ST T.E)]
 
+  ;[SE ::= S.E (in-hole S.E (ST TE))]
+  ;[TE ::= T.E (in-hole T.E (TS SE))]
+
   [S ::= S.S]
   [arith-op ::= S.arith-op]
   [binop ::= S.binop]
@@ -127,18 +130,70 @@
 
      (-->embed S.e (TS S.e))))
 
-(define anf-eval->+
-  (union-reduction-relations
-   (context-closure λi-> ANFL S.E)
-   (context-closure λa-> ANFL T.E)
-   ;(context-closure embed-> ANFL hole)
-   (context-closure anf-> ANFL T)
-   (context-closure st-> ANFL C)))
-
 (define anf->+
   (union-reduction-relations
    (context-closure anf-> ANFL T)
    st->))
+
+(define (maybe-apply-reduction-relation r e)
+  (with-handlers ([values (lambda _ #f)])
+    (apply-reduction-relation r e)))
+
+(define-judgment-form ANFL
+  #:mode (λi->j I O)
+
+  [(where ((S_2 S.e_2)) ,(maybe-apply-reduction-relation λi-> (term (S_1 S.e_1))))
+   -------------------
+   (λi->j (S_1 S.e_1) (S_2 S.e_2))])
+
+(define-judgment-form ANFL
+  #:mode (λa->j I O)
+
+  [(where ((S e)) ,(maybe-apply-reduction-relation λa-> (term any_1)))
+   -------------------
+   (λa->j any_1 (S e))])
+
+(define-judgment-form ANFL
+  #:mode (anf->+j I O)
+
+  [(where (e_p ... e e_r ...) ,(maybe-apply-reduction-relation anf->+ (term e_1)))
+   -------------------
+   (anf->+j e_1 e)])
+
+(define-judgment-form ANFL
+  #:mode (anf-eval->+ I O)
+
+  [(λi->j (S_1 S.e_1) (S_2 S.e_2))
+   -----------------------------
+   (anf-eval->+ (S_1 S.e_1) (S_2 S.e_2))]
+
+  [(λi->j (S_1 S.e_1) (S_2 S.e_2))
+   -----------------------------
+   (anf-eval->+ (S_1 (TS S.e_1)) (S_2 (TS S.e_2)))]
+
+  [(λa->j (S_1 T.e_1) (S_2 T.e_2))
+   -----------------------------
+   (anf-eval->+ (S_1 T.e_1) (S_2 T.e_2))]
+
+  [(λa->j (S_1 T.e_1) (S_2 T.e_2))
+   -----------------------------
+   (anf-eval->+ (S_1 (ST T.e_1)) (S_2 (ST T.e_2)))]
+
+  [(anf->+j T.e_1 T.e_2)
+   ;; TODO: Need to be able to translate the heap.
+   -----------------------------
+   (anf-eval->+ (S_1 T.e_1) (S_1 T.e_2))])
+
+(define-judgment-form ANFL
+  #:mode (anf-eval->* I O)
+
+  [(anf-eval->+ (S_1 e_1) (S_2 e_2))
+   (anf-eval->* (S_2 e_2) (S_3 e_3))
+   -----------------------------
+   (anf-eval->* (S_1 e_1) (S_3 e_3))]
+
+  [-----------------------------
+   (anf-eval->* (S e) (S e))])
 
 (define-metafunction ANFL
   compile-anf : S.e -> T.e
@@ -194,17 +249,15 @@
         (letrec ([j (λ (x) (+ x 1))])
           (if x (j 6) (j 7))))))
 
-    (test-->>
-     anf-eval->+
-     #:equiv alpha-equivalent?
-     (term (TS (+ (if (let ([x #t]) x) 6 7) 1)))
+    (test-judgment-holds
+     (anf-eval->* (() (TS (+ (if (let ([x #t]) x) 6 7) 1)))
+                  (_ 7)))
 
-     (term 7)
-
-     (term
-      (let ([x #t])
-        (letrec ([j (λ (x) (+ x 1))])
-          (if x (j 6) (j 7))))))
+    (test-judgment-holds
+     (anf-eval->* (() (TS (+ (if (let ([x #t]) x) 6 7) 1)))
+                  (() (let ([x_2 #t])
+                        (letrec ([x_3 (λ (x_1) (+ x_1 1))])
+                          (if x_2 (x_3 6) (x_3 7)))))))
 
     #;(test-->>
        cc->+

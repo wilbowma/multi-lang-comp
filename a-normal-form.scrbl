@@ -1,6 +1,8 @@
 #lang scribble/acmart @acmsmall @nonacm @screen
 @(require
   scriblib/footnote
+  latex-utils/scribble/theorem
+  latex-utils/scribble/utils
   "lambda-s.rkt"
   "lambda-a.rkt"
   "anf.rkt"
@@ -135,7 +137,7 @@ source term ("Target on the outside, Source on the inside").
 Then we define the multi-language expressions @render-term[ANFL e] as either a
 source or target term.
 
-@figure["fig:anf-boundary-red" @elem{@|anf-lang| Boundary Reductions}
+@figure["fig:anf-boundary-red" @elem{@|anf-multi-lang| Boundary Reductions}
   (render-reduction-relation st-> #:style 'horizontal)
 ]
 
@@ -258,7 +260,7 @@ Consider the following example, taken from @todo{cite flanagan1993}:
    (vl-append
     (render-step n e)
     (render-term λaL -->|st,a|*)
-    (with-paper-rewriters (render-term/pretty-write ANFL (apply-reduction-relation* anf->+ (term e))))))
+    (with-paper-rewriters (render-term/pretty-write ANFL (car (apply-reduction-relation* anf->+ (term e)))))))
 
 @(render-prefix-and-finish 6 (TS (+ (+ 2 2) (let ([x 1]) (f 1)))))
 
@@ -288,3 +290,51 @@ really required for reduction as compiliation.
      (para "Example:")
      (tabular #:row-properties '((top)) (list (list "> " (render-term λaL (step (TS e))))))
      (with-paper-rewriters (render-term/pretty-write λaL (term (compile-anf e))))))
+
+We can define compilation as normalization with respect to the A-reductions and
+boundary reductions.
+
+@section{Compiler Correctness as Confluent Multi-Language Reduction}
+The multi-language semantics allows us to define a reduction system in which
+confluence is compiler correctness.
+The intuition is simple.
+We define a reduction system in which any embedded source term can either take a
+step in the source semantics, or take a translation step.
+Any target term can take a step in the target semantics.
+Confluence tells us that if we take a source step, then translate, then reduce,
+that's the same as translating then reducing, @ie confluence is forward
+simulation.
+
+@figure["fig:anf-multi-red" @elem{@|anf-multi-lang| Multi-language Reduction}]{
+  @(render-judgment-form anf-eval->+)
+}
+First we define the multi-language reduction system (@Figure-ref{fig:anf-multi-red}}).
+The reduction system captures the the intution described above.
+If we have a source term, and it takes a step in the source semantics, then it
+takes a step in the multi-language reduction.
+We extend source reduction to apply under a @render-term[ANFL TS] boundary,
+essentially implementing the new @render-term[ANFL TS] evaluation context give
+the standard multi-language semantics.
+We analogous enable multi-language terms to reduce in the target semantics.
+And finally, we enable a term to take a step translation step, either performing
+an A-reduction or boundary cancellation step.
+This system defines the single-step relation, and we take its reflexive
+transitive closure to define the full multi-language evaluator.
+
+Now we can define compiler correctness as confluence.
+
+@mthm[@elem{Compiler Correctness} #:tag "thm:anf:correct"]{
+If @render-term[ANFL (anf-eval->* (S e) (S_1 e_1))] and @exact{\\}
+@render-term[ANFL (anf-eval->* (S e) (S_2 e_2))] then
+@render-term[ANFL (anf-eval->* (S_1 e_1) (S_3 e_3))] and
+@render-term[ANFL (anf-eval->* (S_2 e_2) (S_3 e_3))]
+}
+
+Unforunately, this does not save us much proof effort.
+The single-step reduction is not confluent, since a transation step may need to
+be followed by boundary cancelation before a target step can take place, so the
+proof of confluence of the evaluate is non-trivial.
+The simplest approach may be Takahashi's "universal common reduct", which
+essentially forces us to define the compiler as a translation.
+
+@section{Multi-Language Reduction as JIT Compilation}

@@ -30,11 +30,15 @@
 
 (provide
  (all-from-out scriblib/figure)
- (rename-out [_render-metafunction render-metafunction])
+ (rename-out
+  [_render-metafunction render-metafunction]
+  [_render-judgment-form render-judgment-form])
  extend-language-show-union
  extend-language-show-extended-order
  ~a
  (all-defined-out))
+
+(define ie (emph "i.e."))
 
 (*use-cache?* #f)
 (define source-lang "Scheme-ish")
@@ -72,6 +76,9 @@
 
 (define-syntax-rule (_render-metafunction e ...)
   (with-paper-rewriters (render-metafunction e ...)))
+
+(define-syntax-rule (_render-judgment-form e ...)
+  (with-paper-rewriters (render-judgment-form e ...)))
 
 (define-syntax-rule (render-reduction-relation e ...)
   (with-paper-rewriters (render-reduction-relation-cache e ...)))
