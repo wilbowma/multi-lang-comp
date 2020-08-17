@@ -338,3 +338,21 @@ The simplest approach may be Takahashi's "universal common reduct", which
 essentially forces us to define the compiler as a translation.
 
 @section{Multi-Language Reduction as JIT Compilation}
+The multi-language evaluator captures the semantics of JIT compilation: at any
+point, a source expression can instead be translated to the target language,
+after which time it runs in the target language semantics.
+We could model speculative optimization as a simple @render-term[ANFL if]
+expression: the term @render-term[ANFL (ST (if e_p (TS e) e))], where
+@render-term[ANFL e_p] encodes the dynamic assumption under which the variant
+@render-term[(TS e)] is executed.
+Initially, this is just an embedded copy of the original unoptimized code.
+However, the multi-language evaluator semantics allow us to compile it.
+
+This is not a particularly realistic model of speculative execution.
+In particular, it does not capture fine-grained composable assumptions, nor
+deoptimization from models such as @todo{cite fluckiger}.
+However, the approach is more general: many compiler translations are easily
+modeled (as we show later) as multi-language semantics, and so we easily derive
+a model of source-to-assembly JIT compiler.
+Interesting future work would equip the multi-language semantics with better
+semantics for speculative optimization.
