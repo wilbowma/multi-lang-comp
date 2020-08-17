@@ -30,6 +30,9 @@
 
 (provide
  (all-from-out scriblib/figure)
+ (rename-out [_render-metafunction render-metafunction])
+ extend-language-show-union
+ extend-language-show-extended-order
  ~a
  (all-defined-out))
 
@@ -66,6 +69,9 @@
 
 (define-syntax-rule (render-language e ...)
   (with-paper-rewriters (render-language-cache e ...)))
+
+(define-syntax-rule (_render-metafunction e ...)
+  (with-paper-rewriters (render-metafunction e ...)))
 
 (define-syntax-rule (render-reduction-relation e ...)
   (with-paper-rewriters (render-reduction-relation-cache e ...)))

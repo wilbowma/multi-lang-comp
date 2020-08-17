@@ -35,8 +35,7 @@
      (let ([x n] ...) Cm)
      (letrec ([x (λ (x ...) e)] ...
               [x (λ (x ...) Cm)]
-              [x (λ (x ...) e)] ...)
-       e)
+              [x (λ (x ...) e)] ...) e)
      (letrec ([x (λ (x ...) e)] ...) Cm)
      (begin n ... Cm)
      (if V Cm e)
@@ -73,6 +72,18 @@
    (--> (S (begin v ... e))
         (S e))))
 
+(define-metafunction λaL-eval
+  hcompose : E e -> e
+  [(hcompose E n) (in-hole E n)]
+  [(hcompose E (let ([x n] ...) e))
+   (let ([x n] ...) (hcompose E e))]
+  [(hcompose E (begin n ... e))
+   (begin n ... (hcompose E e))]
+  [(hcompose E (if V e_1 e_2))
+   (if V (hcompose E e_1) (hcompose E e_2))]
+  [(hcompose E (letrec ([x any] ...) e))
+   (letrec ([x any] ...) (hcompose E e))])
+
 (define λa->admin
   (reduction-relation
    λaL-eval
@@ -80,7 +91,7 @@
    #:codomain (S e)
 
    (--> (S (in-hole E (l v ..._1)))
-        (S (in-hole E (subst-all (x ...) (v ...) e)))
+        (S (hcompose E (subst-all (x ...) (v ...) e)))
         (where (λ (x ..._1) e) (store-ref S l)))
 
    (--> (S (in-hole E (l v ...)))

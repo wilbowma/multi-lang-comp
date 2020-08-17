@@ -29,7 +29,7 @@
   [primop ::= T.primop S.primop]
   [e ::= S.e T.e]
 
-  [T ::= (in-hole T.Cv (TS T.Cm))]
+  [T ::= (in-hole C (TS T.Cm))]
 
   [C ::= T.Cv]
 
@@ -68,20 +68,7 @@
    (-->a
     (in-hole S.E (let ([T.x S.e] ...) S.e_2))
     (ST (let ([T.x (TS S.e)] ...) (TS (in-hole S.E S.e_2))))
-    (where (S.E_!_1 S.E_!_1) (hole S.E)))
-
-   (-->a
-    (in-hole S.E (if T.V S.e_1 S.e_2))
-    (ST (letrec ([j (λ (x) (in-hole S.E x))])
-      (if T.V (TS (j S.e_1)) (TS (j S.e_2)))))
-    (fresh j)
-    (fresh x)
-    (fresh x2)
-    (side-condition (not (redex-match? ANFL T.Cm (term S.E)))))
-
-   (-->a
-    (in-hole T.Cm (if T.V S.e_1 S.e_2))
-    (ST (if T.V (TS S.e_1) (TS S.e_2))))
+    #;(where (S.E_!_1 S.E_!_1) (hole S.E)))
 
    (-->a
     (in-hole S.E (begin S.e_r ... S.e))
@@ -90,6 +77,19 @@
    (-->a
     (in-hole S.E (letrec ([T.x (λ any S.e_1)] ...) S.e))
     (ST (letrec ([T.x (λ any (TS S.e_1))] ...) (TS (in-hole S.E S.e)))))
+
+   (-->a
+    (in-hole S.E (if T.V S.e_1 S.e_2))
+    (ST (letrec ([j (λ (x) (in-hole S.E x))])
+          (if T.V (TS (j S.e_1)) (TS (j S.e_2)))))
+    (fresh j)
+    (fresh x)
+    (fresh x2)
+    (side-condition (not (redex-match? ANFL T.Cm (term S.E)))))
+
+   (-->a
+    (in-hole T.Cm (if T.V S.e_1 S.e_2))
+    (ST (if T.V (TS S.e_1) (TS S.e_2))))
 
    (-->a (in-hole S.E T.n) (ST (let ([x T.n]) (TS (in-hole S.E x))))
     (fresh x)
