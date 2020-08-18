@@ -332,6 +332,12 @@
   (with-compound-rewriters
     (['≡
       (curry binop "≡")]
+     ['non-Cn
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ∉ ")
+              (nt-t "T.Cn")))]
      ['→
       (λ (lws)
         (list ""
