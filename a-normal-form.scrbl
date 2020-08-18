@@ -325,7 +325,7 @@ that's the same as translating then reducing, @ie confluence is forward
 simulation.
 
 @figure["fig:anf-multi-red" @elem{@|anf-multi-lang| Multi-language Reduction}]{
-  @(render-judgment-form anf-eval->+)
+  @(with-paper-rewriters (render-judgment-form-rows anf-eval->+'(2 2 1)))
 }
 First we define the multi-language reduction system (@Figure-ref{fig:anf-multi-red}}).
 The reduction system captures the the intution described above.

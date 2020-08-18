@@ -367,7 +367,7 @@
         (list ""
               (list-ref lws 2)
               (def-t " ∉ ")
-              (nt-t "T.v")))]
+              (nt-t "T.Tv")))]
      ['non-boolean?
       (λ (lws)
         (list ""
@@ -393,6 +393,20 @@
               (def-t " ∉ ")
               (nt-t "fv")))]
      ['→
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " → ")
+              (list-ref lws 3)
+              ""))]
+     ['λi->j
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " → ")
+              (list-ref lws 3)
+              ""))]
+     ['λa->j
       (λ (lws)
         (list ""
               (list-ref lws 2)
@@ -438,6 +452,13 @@
         (list ""
               (list-ref lws 2)
               (def-t " ⇓ᵃⁿᶠ ")
+              (list-ref lws 3)
+              ""))]
+     ['anf-eval->+
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ⇒ˢᵃ ")
               (list-ref lws 3)
               ""))]
      ['→*
