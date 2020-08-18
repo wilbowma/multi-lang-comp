@@ -15,19 +15,15 @@ The compiler performs the A-normal-form translation, closure conversion, heap
 allocation and representation specification, hoisting, and code generation.
 
 The novelity in the design is that the compiler is not a translation between
-languages.
-Instead, the compiler is reduction relation in a multi-language semantics.
-Normalization of the cross-language redexes performs ahead-of-time (AOT)
-compilation.
-Evaluation in the multi-language can be see as a specification for just-in-time
-(JIT) compilation.
-
+languages, but a reduction relation in a multi-language semantics.
 Formalizing the compiler as a multi-language semantics provides interesting
 semantic insights, presentation benefits, and verification benefit.
-For example, (whole-program) compiler correctness is strong normalization in the
-source/target multi-language semantics.
-The semantics provides interesting insight into bootstrapping compilers, and may
-provide insights into the semantics of JIT compilation and macro systems.
+Normalization of the cross-language redexes performs ahead-of-time (AOT)
+compilation.
+Evaluation in the multi-language models just-in-time (JIT) compilation.
+Confluence implies compiler correctness.
+The semantics provides interesting semantics insight into bootstrapping
+compilers and macro systems.
 }
 
 @include-section{source.scrbl}
