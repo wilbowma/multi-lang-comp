@@ -70,10 +70,12 @@
      (binop v E)
      (tag-pred E)]
   ;; NOTE: Need vars as variable if we want to reuse in ANF def.
-  [v ::= fixnum boolean '() (void) l x])
+  [v ::= fixnum boolean '() (void) l x]
+  [fv ::= (λ (x ...) e)]
+  [hv ::= v fv (pair v v) (box v)])
 
 (define-metafunction λiL-eval
-  store-extend : S (l v) ... -> S
+  store-extend : S (l hv) ... -> S
   [(store-extend any ...)
    (env-extend any ...)])
 
@@ -95,18 +97,18 @@
    (--> (S (in-hole E (let ([x v] ...) e)))
         (S (in-hole E (subst-all (x ...) (v ...) e))))
 
-   (--> (S_1 (in-hole E (letrec ([x v] ...) e)))
+   (--> (S_1 (in-hole E (letrec ([x fv] ...) e)))
         (S_2 (in-hole E (subst-all (x ...) (l ...) e)))
 
         (where (l ...) (fresh-labels x ...))
-        (where (v_1 ...) ((subst-all (x ...) (l ...) v) ...))
-        (where S_2 (store-extend S_1 (l v_1) ...)))
+        (where (fv_1 ...) ((subst-all (x ...) (l ...) fv) ...))
+        (where S_2 (store-extend S_1 (l fv_1) ...)))
 
    (--> (S (in-hole E (begin v ... e)))
         (S (in-hole E e)))))
 
 (define-metafunction λiL-eval
-  store-ref : S l -> v
+  store-ref : S l -> hv
   [(store-ref S l) (env-ref S l)])
 
 (define λi->admin
@@ -182,8 +184,8 @@
    ;; Pairs
    (--> (S (in-hole E (pair v_1 v_2)))
         (S_1 (in-hole E l))
-        (where S_1 (store-set S l (pair v_1 v_2)))
-        (fresh l))
+        (where l ,(fresh-label))
+        (where S_1 (store-extend S (l (pair v_1 v_2)))))
    (--> (S (in-hole E (first l)))
         (S (in-hole E v_1))
         (where (pair v_1 v_2) (store-ref S l)))
@@ -248,6 +250,17 @@
    λi->eq))
 
 (define-metafunction λiL-eval
+  print-λiL : S hv -> e
+  [(print-λiL S l)
+   (print-λiL S (store-ref S l))]
+  [(print-λiL S (pair v_1 v_2))
+   (pair (print-λiL S v_1) (print-λiL S v_2))]
+  [(print-λiL S (λ (x ...) e))
+   '<procedure>]
+  [(print-λiL S v)
+   v])
+
+(define-metafunction λiL-eval
   eval-λiL : e -> v
   [(eval-λiL e)
    ,(second (car (apply-reduction-relation* λi-> (term (() e)))))])
@@ -303,17 +316,19 @@
                     [odd? (λ (n)
                             (if (eq? n 0)
                                 #f
-                                (even? (- n 1))))])
-             (pair
-              (even? 5)
-              (pair
+                                (even? (- n 1))))]
+                    [and (λ (n m) (if n m #f))]
+                    [not (λ (n) (if n #f #t))])
+             (and
+              (not (even? 5))
+              (and
                (even? 4)
-               (pair (even? 0) '()))))))
-         (term (pair #f (pair #t (pair #t '())))))
+               (even? 0))))))
+         (term #t))
 
 (test-->> λi->
           #:equiv (lambda (x y)
-                    (alpha-equivalent? λiL (second x) y))
+                    (alpha-equivalent? λiL (term (print-λiL ,(car x) ,(cadr x))) y))
           (term
            (()
             (let ([x (box 5)])
@@ -326,5 +341,5 @@
           (term (pair 5 (pair 6 '()))))
 
 (test-->> λi-> #:equiv (lambda (x y)
-                         (alpha-equivalent? λiL (second x) y))
+                         (alpha-equivalent? λiL (term (print-λiL ,(car x) ,(cadr x))) y))
           (term (() s-eg)) (term (pair 120 '())))
