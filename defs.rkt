@@ -45,7 +45,7 @@
 (*use-cache?* #f)
 (define source-lang (elem "λ" (elem #:style 'superscript "S")))
 (define anf-lang (elem "λ" (elem #:style 'superscript "A")))
-(define anf-multi-lang (elem "λ" (elem #:style 'superscript "→a")))
+(define anf-multi-lang (elem "λ" (elem #:style 'superscript "sa")))
 
 (define todo margin-note)
 
@@ -310,6 +310,25 @@
                 (loop (cons y rst)))]
        [(list x) (list x "")]))))
 
+
+(define (λs->-arrow)
+  (with-paper-rewriters
+    (lift-above-baseline
+     (vc-append
+      -5
+      (text "λs" Linux-Liberterine-name 7)
+      (def-t " → "))
+     10)))
+
+(define (λa->-arrow)
+  (with-paper-rewriters
+    (lift-above-baseline
+     (vc-append
+      -5
+      (text "λa" Linux-Liberterine-name 7)
+      (def-t " → "))
+     10)))
+
 ;; Rewriters!
 (set-arrow-pict!
  '-->
@@ -318,12 +337,24 @@
      (lambda ()
        (def-t "→")))))
 
+(set-arrow-pict! '-->λs λs->-arrow)
+(set-arrow-pict! '-->λa λs->-arrow)
+
 (define (a->-arrow) (with-paper-rewriters (def-t " →ᵃ ")))
 (define (st->-arrow) (with-paper-rewriters (def-t " →ˢᵗ ")))
 
 (set-arrow-pict! '-->a a->-arrow)
 
 (set-arrow-pict! '-->st st->-arrow)
+
+(define (ANFL->-arrow)
+  (with-paper-rewriters
+    (lift-above-baseline
+     (vc-append
+      -5
+      (text "λsa" Linux-Liberterine-name 7)
+      (def-t " ⇒ "))
+     10)))
 
 (define (anf->+-arrow)
   (with-paper-rewriters (def-t " ˢ→ᵃ ")))
@@ -403,14 +434,14 @@
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (def-t " → ")
+              (λs->-arrow)
               (list-ref lws 3)
               ""))]
      ['λa->j
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (def-t " → ")
+              (λa->-arrow)
               (list-ref lws 3)
               ""))]
      ['anf->+j
@@ -458,7 +489,7 @@
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (def-t " ⇒ˢᵃ ")
+              (ANFL->-arrow)
               (list-ref lws 3)
               ""))]
      ['→*
