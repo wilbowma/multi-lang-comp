@@ -311,23 +311,18 @@
        [(list x) (list x "")]))))
 
 
-(define (λs->-arrow)
+(define (name-arrow name base [r 2] [t -3])
   (with-paper-rewriters
-    (lift-above-baseline
-     (vc-append
-      -5
-      (text "λs" Linux-Liberterine-name 7)
-      (def-t " → "))
-     10)))
+    (pin-over
+     base
+     r t
+     (text name Linux-Liberterine-name 7))))
+
+(define (λs->-arrow)
+  (name-arrow "λs" (def-t "→")))
 
 (define (λa->-arrow)
-  (with-paper-rewriters
-    (lift-above-baseline
-     (vc-append
-      -5
-      (text "λa" Linux-Liberterine-name 7)
-      (def-t " → "))
-     10)))
+  (name-arrow "λa" (def-t "→")))
 
 ;; Rewriters!
 (set-arrow-pict!
@@ -340,24 +335,27 @@
 (set-arrow-pict! '-->λs λs->-arrow)
 (set-arrow-pict! '-->λa λs->-arrow)
 
-(define (a->-arrow) (with-paper-rewriters (def-t " →ᵃ ")))
-(define (st->-arrow) (with-paper-rewriters (def-t " →ˢᵗ ")))
+(define (a->-arrow) (with-paper-rewriters (def-t "→ᵃ")))
+(define (st->-arrow) (with-paper-rewriters (def-t "→ˢᵗ")))
 
 (set-arrow-pict! '-->a a->-arrow)
 
 (set-arrow-pict! '-->st st->-arrow)
 
 (define (ANFL->-arrow)
+  (name-arrow "λsa" (def-t "⇒") 1))
+
+(define (ANFL->*-arrow)
   (with-paper-rewriters
-    (lift-above-baseline
-     (vc-append
-      -5
-      (text "λsa" Linux-Liberterine-name 7)
-      (def-t " ⇒ "))
-     10)))
+    (hbl-append
+     (ANFL->-arrow)
+     (inset (def-t "*") -2 0 0 0))))
 
 (define (anf->+-arrow)
-  (with-paper-rewriters (def-t " ˢ→ᵃ ")))
+  (with-paper-rewriters (def-t "ˢ→ᵃ")))
+
+(define (pad-arrow p)
+  (hbl-append (def-t " ") p (def-t " ")))
 
 (define (with-paper-rewriters/proc thunk)
   (with-compound-rewriters
@@ -434,21 +432,35 @@
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (λs->-arrow)
+              (pad-arrow (λs->-arrow))
+              (list-ref lws 3)
+              ""))]
+     ['λi->j*
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (hbl-append (pad-arrow (λs->-arrow)) (def-t "*"))
               (list-ref lws 3)
               ""))]
      ['λa->j
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (λa->-arrow)
+              (pad-arrow (λa->-arrow))
+              (list-ref lws 3)
+              ""))]
+     ['λa->j*
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (hbl-append (pad-arrow (λa->-arrow)) (def-t "*"))
               (list-ref lws 3)
               ""))]
      ['anf->+j
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (anf->+-arrow)
+              (pad-arrow (anf->+-arrow))
               (list-ref lws 3)
               ""))]
      ['anf->*j
@@ -462,21 +474,21 @@
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (a->-arrow)
+              (pad-arrow (a->-arrow))
               (list-ref lws 3)
               ""))]
      ['st->j
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (st->-arrow)
+              (pad-arrow (st->-arrow))
               (list-ref lws 3)
               ""))]
      ['not-anf->+j
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (def-t " ˢ↛ᵃ ")
+              (pad-arrow (def-t "ˢ↛ᵃ"))
               ""))]
      ['anf-compile
       (λ (lws)
@@ -489,7 +501,14 @@
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (ANFL->-arrow)
+              (pad-arrow (ANFL->-arrow))
+              (list-ref lws 3)
+              ""))]
+     ['anf-eval->*
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (pad-arrow (ANFL->*-arrow))
               (list-ref lws 3)
               ""))]
      ['→*
