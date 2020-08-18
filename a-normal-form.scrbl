@@ -342,19 +342,41 @@ transitive closure to define the full multi-language evaluator.
 
 Now we can define compiler correctness as confluence.
 
-@mthm[@elem{Confluence/Compiler Correctness} #:tag "thm:anf:correct"]{
-If @render-term[ANFL (anf-eval->* (S e) (S_1 e_1))] and @exact{\\}
-@render-term[ANFL (anf-eval->* (S e) (S_2 e_2))] then
+@mthm[@elem{Confluence} #:tag "thm:anf:confluence"]{
+If @render-term[ANFL (anf-eval->* (S e) (S_1 e_1))] and
+@render-term[ANFL (anf-eval->* (S e) (S_2 e_2))] then @exact{\\}
 @render-term[ANFL (anf-eval->* (S_1 e_1) (S_3 e_3))] and
 @render-term[ANFL (anf-eval->* (S_2 e_2) (S_3 e_3))]
 }
 
-Unforunately, this does not save us much proof effort.
-The single-step reduction is not confluent, since a transation step may need to
-be followed by boundary cancelation before a target step can take place, so the
-proof of confluence of the evaluate is non-trivial.
-The simplest approach may be Takahashi's "universal common reduct", which
-essentially forces us to define the compiler as a translation.
+@mcor[@elem{Whole-Program Correctness} #:tag "thm:anf:correct"]{
+If
+@render-term[ANFL (λi->j* (() S.e) (S S.v))] and
+@render-term[ANFL (anf-compile S.e T.e)] then
+@render-term[ANFL (λa->j* (() T.e) (S T.v))] such that
+@render-term[ANFL T.v] is equal to
+@render-term[ANFL S.v].
+}
+@tprf["Proof."]{
+Note that @render-term[ANFL (λi->j* (() S.e) (S S.v))] implies
+@render-term[ANFL (anf-eval->* (() S.e) (S S.v))].
+Similarly, @render-term[ANFL (anf-eval->* (S S.e) (S T.e))].
+By confluence, there must exist some @render-term[ANFL S_3] and
+@render-term[ANFL e_3] such that
+@render-term[ANFL (anf-eval->* (S S.v) (S_3 e_3))] and
+@render-term[ANFL (anf-eval->* (S T.e) (S_3 e_3))].
+Since values cannot step, we know @render-term[ANFL e_3] must be
+@render-term[ANFL S.v].
+Since values are shared across languages, we pick @render-term[ANFL T.v] to be
+@render-term[ANFL S.v] and the goal is complete.
+}
+
+@;Unforunately, this may not save us much proof effort.
+@;The single-step reduction is not confluent, since a transation step may need to
+@;be followed by boundary cancelation before a target step can take place, so the
+@;proof of confluence of the evaluate is non-trivial.
+@;The simplest approach may be Takahashi's "universal common reduct", which
+@;essentially forces us to define the compiler as a translation.
 
 @section{Multi-Language Reduction as JIT Compilation}
 The multi-language evaluator captures the semantics of JIT compilation: at any

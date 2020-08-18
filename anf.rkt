@@ -174,11 +174,33 @@
    (λi->j (S_1 S.e_1) (S_2 S.e_2))])
 
 (define-judgment-form ANFL
+  #:mode (λi->j* I O)
+
+  [-------------------
+   (λi->j* (S_1 S.e_1) (S_1 S.e_1))]
+
+  [(λi->j (S_1 S.e_1) (S_2 S.e_2))
+   (λi->j* (S_1 S.e_1) (S_3 S.e_3))
+   -------------------
+   (λi->j* (S_1 S.e_1) (S_3 S.e_3))])
+
+(define-judgment-form ANFL
   #:mode (λa->j I O)
 
   [(where ((S e)) ,(maybe-apply-reduction-relation λa-> (term any_1)))
    -------------------
    (λa->j any_1 (S e))])
+
+(define-judgment-form ANFL
+  #:mode (λa->j* I O)
+
+  [-------------------
+   (λa->j* (S_1 S.e_1) (S_1 S.e_1))]
+
+  [(λa->j (S_1 S.e_1) (S_2 S.e_2))
+   (λa->j* (S_1 S.e_1) (S_3 S.e_3))
+   -------------------
+   (λa->j* (S_1 S.e_1) (S_3 S.e_3))])
 
 (define-judgment-form ANFL
   #:mode (anf-eval->+ I O)
