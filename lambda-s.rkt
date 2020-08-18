@@ -70,7 +70,7 @@
      (binop v E)
      (tag-pred E)]
   ;; NOTE: Need vars as variable if we want to reuse in ANF def.
-  [v ::= fixnum #t #f '() (pair v v) (λ (x ...) e) (void) l x])
+  [v ::= fixnum boolean '() (void) l x])
 
 (define-metafunction λiL-eval
   store-extend : S (l v) ... -> S
@@ -179,22 +179,28 @@
    #:domain (S e)
    #:codomain (S e)
 
-  ;; Pairs
-  (--> (S (in-hole E (first (pair v_1 v_2))))
-       (S (in-hole E v_1)))
-  (--> (S (in-hole E (first v)))
-       (S (error))
-       (side-condition (pair-error? (term v))))
-  (--> (S (in-hole E (second (pair v_1 v_2))))
-       (S (in-hole E v_2)))
-  (--> (S (in-hole E (second v)))
-       (S (error))
-       (side-condition (pair-error? (term v))))
-  (--> (S (in-hole E (pair? (pair v_1 v_2))))
-       (S (in-hole E #t)))
-  (--> (S (in-hole E (pair? v)))
-       (S (in-hole E #f))
-       (side-condition (pair-error? (term v))))))
+   ;; Pairs
+   (--> (S (in-hole E (pair v_1 v_2)))
+        (S_1 (in-hole E l))
+        (where S_1 (store-set S l (pair v_1 v_2)))
+        (fresh l))
+   (--> (S (in-hole E (first l)))
+        (S (in-hole E v_1))
+        (where (pair v_1 v_2) (store-ref S l)))
+   (--> (S (in-hole E (first v)))
+        (S (error))
+        (side-condition (pair-error? (term v))))
+   (--> (S (in-hole E (second l)))
+        (S (in-hole E v_2))
+        (where (pair v_1 v_2) (store-ref S l)))
+   (--> (S (in-hole E (second v)))
+        (S (error))
+        (side-condition (pair-error? (term v))))
+   (--> (S (in-hole E (pair? (pair v_1 v_2))))
+        (S (in-hole E #t)))
+   (--> (S (in-hole E (pair? v)))
+        (S (in-hole E #f))
+        (side-condition (pair-error? (term v))))))
 
 (define λi->arith
   (reduction-relation
