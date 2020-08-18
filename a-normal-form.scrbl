@@ -33,9 +33,6 @@ implicit in earlier presentations of the A-reductions.
 We specify the target language as essentially the source language but with the
 syntax restricted to A-normal form.
 This is defined in @Figure-ref{fig:anf-syntax}.
-For simplicity, we abstract all primitive operations into @render-term[λaL n],
-but still require each operator is applied to the correct number of operands.
-@todo{Should move that to source}
 
 ANF specifies a syntactic distinction between values @render-term[λaL v],
 computations @render-term[λaL n], and configurations @render-term[λaL e].
@@ -68,11 +65,10 @@ Instead, we only need to choose the evaluation order of simple computations.
 In @Figure-ref{fig:anf-lang-syn}, we define the evaluation context
 @render-term[λaL-eval E], and a separate class of run-time values
 @render-term[λaL-eval v].
-@todo{That the run-time values are different is a flaw. Should only need labels, and then be able to eliminate pairs and lambdas as values. Instead, they get allocated in the store. This seems strange, but makes equality work better and reflects that pair is not truely a value in ANF but an operation that allocates.}
 @note{We could eliminate the evaluation context entirely by removing multi-arity
 @render-term[λaL let] and @render-term[λaL begin] from the language, but this
-only obscures the fact that evaluation order---left-to-right,
-call-by-value---must still be specified in ANF.
+only obscures the fact that evaluation order must still be specified in ANF, and
+a control stack is still required in the semantics.
 There's also no particular advantage to trying to simplify the evaluation
 context.}
 
@@ -91,7 +87,7 @@ strategy.
 ]
 
 The reduction system for @|anf-lang| is not significantly different from @|source-lang|.
-We give the key rules in @Figure-ref{fig:anf-lang-red}.
+We give the example rules in @Figure-ref{fig:anf-lang-red}.
 The main differences are in the definition of the evaluation contexts, and in
 the reduction rules for function calls and composition forms.
 The composition forms @render-term[λaL letrec], @render-term[λaL let], and
@@ -117,7 +113,7 @@ it by using join-point optimization during compilation to ANF.
 @figure["fig:anf-multi-syn" @elem{@|anf-multi-lang| Syntax (excerpts)}
   (parameterize ([extend-language-show-union #t]
                  [extend-language-show-extended-order #t])
-    (render-language ANFL #:nts '(T.e T.n T.v S.e e)))
+    (render-language ANFL #:nts '(A.e A.n A.v S.e e)))
 ]
 
 Next we define the @|source-lang| + @|anf-lang| multi-language,
@@ -130,11 +126,11 @@ We define the standard multi-language syntax for @|anf-multi-lang| in
 The syntax is defined essentially by merging the syntax of
 @|source-lang| and @|anf-lang|.
 First, we introduce tagged non-terminals: @render-term[ANFL S.e] for purely
-source and @render-term[ANFL T.e] for purely target terms.
-These are each extended with a boundary term: @render-term[ANFL (ST T.e)] for an
-embedding of a target term in a source term ("Source on the outside, Target on
-the inside"), and @render-term[ANFL (TS S.e)] for embedding a target term in a
-source term ("Target on the outside, Source on the inside").
+source and @render-term[ANFL A.e] for purely target terms.
+These are each extended with a boundary term: @render-term[ANFL (SA A.e)] for an
+embedding of a target term in a source term ("Source on the outside, ANF on
+the inside"), and @render-term[ANFL (AS S.e)] for embedding a target term in a
+source term ("ANF on the outside, Source on the inside").
 Then we define the multi-language expressions @render-term[ANFL e] as either a
 source or target term.
 
@@ -151,7 +147,7 @@ subterm rather than only those being evaluated.
 @section{Multi-language A-reductions}
 @;In this multi-language, we define reduction as applying any of the
 @;@|source-lang| reductions to @render-term[ANFL S.e] redex, and any of the
-@;@|anf-lang| reductions to any @render-term[ANFL T.e].
+@;@|anf-lang| reductions to any @render-term[ANFL A.e].
 @;We also add the standard boundary cancelation reductions, defined in
 @;@Figure-ref{fig:anf-boundary-ref}.
 @;
@@ -167,7 +163,7 @@ Now we can define the A-reductions, given in @Figure-ref{fig:a-red}.
 The translation is defined over @render-term[ANFL S.e] expressions, that is,
 source expressions in the multi-language.
 The first rule reduces any term that happens to also be a target language
-expression and wraps it in an @render-term[ANFL ST] boundary, embedding the
+expression and wraps it in an @render-term[ANFL SA] boundary, embedding the
 target expression properly.
 This step was implicit in by the reflexive closure of the A-reductions in the
 original presentation.
@@ -193,12 +189,12 @@ to the evaluation context.
 In addition to perform the standard A-reductions, we mark each language boundary
 explicitly. After A-reducing a @render-term[ANFL let], for exameple, the
 @render-term[ANFL let] itself is in the target language, so we use the
-@render-term[ANFL ST] boundary to embed the now-target term it its source
+@render-term[ANFL SA] boundary to embed the now-target term it its source
 context.
 However, its subexpressions are still source expressions, so we embed them in
-the now-target @render-term[ANFL let] using the @render-term[ANFL TS] boundary.
+the now-target @render-term[ANFL let] using the @render-term[ANFL AS] boundary.
 Note that this makes the subexpression appear in translation context, while the
-@render-term[ANFL ST] boundary means the @render-term[ANFL let] itself does not
+@render-term[ANFL SA] boundary means the @render-term[ANFL let] itself does not
 appear in translation context.
 
 @;Typically, we would next define reduction in the multi-language system.
@@ -226,11 +222,11 @@ The definition is complicated slightly by the particulars of ANF, and is simpler
 in other translations.
 
 A translation context is any non-evaluation target languge context
-@render-term[ANFL T.Cm] appearing under a boundary @render-term[ANFL TS],
-written @render-term[ANFL (TS T.Cm)].
+@render-term[ANFL A.Cm] appearing under a boundary @render-term[ANFL AS],
+written @render-term[ANFL (AS A.Cm)].
 This can further be nested in an arbitrary multi-language program context,
-written @render-term[ANFL (in-hole C (TS T.Cm))].
-The context @render-term[ANFL T.Cm] corresponds to any target language context in
+written @render-term[ANFL (in-hole C (AS A.Cm))].
+The context @render-term[ANFL A.Cm] corresponds to any target language context in
 which a valid program can be constructed by plugging a configuration into the
 hole.
 @todo{Formally defined in hte appdendix.}
@@ -254,20 +250,20 @@ translation context, or a boundary cancellation step.
 
 To see how the translation-as-reduction works, consider the following example,
 taken from @todo{cite flanagan1993}:
-@(render-prefix-and-finish ANFL anf->+ (anf->+-arrow) 6 (TS (+ (+ 2 2) (let ([x 1]) (f 1)))))
+@(render-prefix-and-finish ANFL anf->+ (anf->+-arrow) 6 (AS (+ (+ 2 2) (let ([x 1]) (f 1)))))
 
 We begin translation by embedding the source term in the multi-language in
-translation context, using the @render-term[ANFL TS] boundary.
+translation context, using the @render-term[ANFL AS] boundary.
 We contract the @render-term[ANFL let] redex, which adds the @render-term[ANFL
-ST] boundary around the whole expression, and wraps the
-subexpressions with the @render-term[ANFL TS] boundary.
+SA] boundary around the whole expression, and wraps the
+subexpressions with the @render-term[ANFL AS] boundary.
 The next redex we contract is boundary cancellation.
 We proceed with another @render-term[ANFL let] redex, which merges the addition
 into the body of the declaration.
 Reduction continues until we reach ANF.
 
 @(require rackunit)
-@(check-exn values (lambda () (step 11 (term (TS (+ (+ 2 2) (let ([x 1]) (f 1))))))))
+@(check-exn values (lambda () (step 11 (term (AS (+ (+ 2 2) (let ([x 1]) (f 1))))))))
 This example finishes in 3 steps in @todo{cite flanagan}, but takes 10 steps in
 our multi-language presentation.
 This is because we make explicit the translation of source values into target
@@ -280,7 +276,7 @@ really required for reduction as compiliation.
 @(define-syntax-rule (render-anf-eg e)
    (nested #:style 'code-inset
      (para "Example:")
-     (tabular #:row-properties '((top)) (list (list "> " (render-term λaL (step (TS e))))))
+     (tabular #:row-properties '((top)) (list (list "> " (render-term λaL (step (AS e))))))
      (with-paper-rewriters (render-term/pretty-write λaL (term (compile-anf e))))))
 
 We can define compilation as normalization with respect to the A-reductions and
@@ -307,8 +303,8 @@ First we define the multi-language reduction system (@Figure-ref{fig:anf-multi-r
 The reduction system captures the the intution described above.
 If we have a source term, and it takes a step in the source semantics, then it
 takes a step in the multi-language reduction.
-We extend source reduction to apply under a @render-term[ANFL TS] boundary,
-essentially implementing the new @render-term[ANFL TS] evaluation context give
+We extend source reduction to apply under a @render-term[ANFL AS] boundary,
+essentially implementing the new @render-term[ANFL AS] evaluation context give
 the standard multi-language semantics.
 We analogous enable multi-language terms to reduce in the target semantics.
 And finally, we enable a term to take a step translation step, either performing
@@ -328,22 +324,22 @@ If @render-term[ANFL (anf-eval->* (S e) (S_1 e_1))] and
 @mcor[@elem{Whole-Program Correctness} #:tag "thm:anf:correct"]{
 If
 @render-term[ANFL (λi->j* (() S.e) (S S.v))] and
-@render-term[ANFL (anf-compile S.e T.e)] then
-@render-term[ANFL (λa->j* (() T.e) (S T.v))] such that
-@render-term[ANFL T.v] is equal to
+@render-term[ANFL (anf-compile S.e A.e)] then
+@render-term[ANFL (λa->j* (() A.e) (S A.v))] such that
+@render-term[ANFL A.v] is equal to
 @render-term[ANFL S.v].
 }
 @tprf["Proof."]{
 Note that @render-term[ANFL (λi->j* (() S.e) (S S.v))] implies
 @render-term[ANFL (anf-eval->* (() S.e) (S S.v))].
-Similarly, @render-term[ANFL (anf-eval->* (S S.e) (S T.e))].
+Similarly, @render-term[ANFL (anf-eval->* (S S.e) (S A.e))].
 By confluence, there must exist some @render-term[ANFL S_3] and
 @render-term[ANFL e_3] such that
 @render-term[ANFL (anf-eval->* (S S.v) (S_3 e_3))] and
-@render-term[ANFL (anf-eval->* (S T.e) (S_3 e_3))].
+@render-term[ANFL (anf-eval->* (S A.e) (S_3 e_3))].
 Since values cannot step, we know @render-term[ANFL e_3] must be
 @render-term[ANFL S.v].
-Since values are shared across languages, we pick @render-term[ANFL T.v] to be
+Since values are shared across languages, we pick @render-term[ANFL A.v] to be
 @render-term[ANFL S.v] and the goal is complete.
 }
 
@@ -359,9 +355,9 @@ The multi-language evaluator captures the semantics of JIT compilation: at any
 point, a source expression can instead be translated to the target language,
 after which time it runs in the target language semantics.
 We could model speculative optimization as a simple @render-term[ANFL if]
-expression: the term @render-term[ANFL (ST (if e_p (TS e) e))], where
+expression: the term @render-term[ANFL (SA (if e_p (AS e) e))], where
 @render-term[ANFL e_p] encodes the dynamic assumption under which the variant
-@render-term[ANFL (TS e)] is executed.
+@render-term[ANFL (AS e)] is executed.
 Initially, this is just an embedded copy of the original unoptimized code.
 However, the multi-language evaluator semantics allow us to compile it.
 

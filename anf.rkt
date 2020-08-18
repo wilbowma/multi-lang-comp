@@ -14,38 +14,38 @@
 
 ; Design pattern for a multi-language with syntactic distinction between source
 ; and target, but also a combined syntax.
-(define-union-language tagANFL (S. λiL-eval) (T. λaL-eval))
+(define-union-language tagANFL (S. λiL-eval) (A. λaL-eval))
 (define-extended-language ANFL tagANFL
   ; NOTE: Hacks to get type setting to work
-  [T.x ::= .... ]
+  [A.x ::= .... ]
   [S.x ::= .... ]
 
   ;; Multi-language
-  [T.v ::= .... (TS S.e)]
-  [T.n ::= .... (TS S.e)]
-  [T.e ::= .... (TS S.e)]
-  [S.e ::= .... (ST T.e)]
-  [x ::= S.x T.x]
-  [primop ::= T.primop S.primop]
-  [e ::= S.e T.e]
+  [A.v ::= .... (AS S.e)]
+  [A.n ::= .... (AS S.e)]
+  [A.e ::= .... (AS S.e)]
+  [S.e ::= .... (SA A.e)]
+  [x ::= S.x A.x]
+  [primop ::= A.primop S.primop]
+  [e ::= S.e A.e]
 
-  [T ::= (in-hole C (TS T.Cm))]
+  [T ::= (in-hole C (AS A.Cm))]
 
-  [C ::= T.Cv]
+  [C ::= A.Cv]
 
   [S ::= S.env])
 
 (define-metafunction ANFL
   [(non-Cn? any)
-   ,(not (redex-match ANFL T.Cn (term any)))])
+   ,(not (redex-match ANFL A.Cn (term any)))])
 
 (define-metafunction ANFL
   [(non-Cm? any)
-   ,(not (redex-match ANFL T.Cm (term any)))])
+   ,(not (redex-match ANFL A.Cm (term any)))])
 
 (define-metafunction ANFL
   [(non-Tv? any)
-   ,(not (redex-match ANFL T.v (term any)))])
+   ,(not (redex-match ANFL A.v (term any)))])
 
 (define anf->
   (reduction-relation
@@ -58,58 +58,58 @@
    ; #t
    #:arrow -->a
 
-   (-->a T.e (ST T.e))
+   (-->a A.e (SA A.e))
 
    (-->a
-    (in-hole S.E (let ([T.x S.e] ...) S.e_2))
-    (ST (let ([T.x (TS S.e)] ...) (TS (in-hole S.E S.e_2)))))
+    (in-hole S.E (let ([A.x S.e] ...) S.e_2))
+    (SA (let ([A.x (AS S.e)] ...) (AS (in-hole S.E S.e_2)))))
 
    (-->a
     (in-hole S.E (begin S.e_r ... S.e))
-    (ST (begin (TS S.e_r) ... (TS (in-hole S.E S.e)))))
+    (SA (begin (AS S.e_r) ... (AS (in-hole S.E S.e)))))
 
    (-->a
-    (in-hole S.E (letrec ([T.x (λ any S.e_1)] ...) S.e))
-    (ST (letrec ([T.x (λ any (TS S.e_1))] ...) (TS (in-hole S.E S.e)))))
+    (in-hole S.E (letrec ([A.x (λ any S.e_1)] ...) S.e))
+    (SA (letrec ([A.x (λ any (AS S.e_1))] ...) (AS (in-hole S.E S.e)))))
 
    (-->a
-    (in-hole S.E (if T.v S.e_1 S.e_2))
-    (ST (letrec ([j (λ (x) (in-hole S.E x))])
-          (if T.v (TS (j S.e_1)) (TS (j S.e_2)))))
+    (in-hole S.E (if A.v S.e_1 S.e_2))
+    (SA (letrec ([j (λ (x) (in-hole S.E x))])
+          (if A.v (AS (j S.e_1)) (AS (j S.e_2)))))
     (fresh j)
     (fresh x)
     (side-condition (term (non-Cn? S.E))))
 
    (-->a
-    (in-hole T.Cm (if T.v S.e_1 S.e_2))
-    (ST (if T.v (TS S.e_1) (TS S.e_2))))
+    (in-hole A.Cm (if A.v S.e_1 S.e_2))
+    (SA (if A.v (AS S.e_1) (AS S.e_2))))
 
-   (-->a (in-hole S.E T.n) (ST (let ([x T.n]) (TS (in-hole S.E x))))
+   (-->a (in-hole S.E A.n) (SA (let ([x A.n]) (AS (in-hole S.E x))))
     (fresh x)
     ; Optimizations
     ; TODO: This optimization can be enabled for "predicates"?
     #;(side-condition
      (not (redex-match? ANFL (in-hole E_1 (if hole e_1 e_2)) (term E))))
     #;(side-condition
-     (not (redex-match? ANFL (in-hole S.E_1 (begin T.n ... hole S.e ... S.e_2)) (term S.E))))
+     (not (redex-match? ANFL (in-hole S.E_1 (begin A.n ... hole S.e ... S.e_2)) (term S.E))))
     ; Termination conditions
     #;(where (S.E_!_1 S.E_!_1) (hole S.E))
     #;(side-condition
-     (not (redex-match? ANFL (in-hole S.E_1 (let ([T.x_1 T.n_1] ... [S.x_2 hole] [S.x_3 S.e_3] ...) S.e_2)) (term S.E))))
+     (not (redex-match? ANFL (in-hole S.E_1 (let ([A.x_1 A.n_1] ... [S.x_2 hole] [S.x_3 S.e_3] ...) S.e_2)) (term S.E))))
     (side-condition
      (term (non-Cn? S.E)))
     (side-condition
-     (term (non-Tv? T.n))))))
+     (term (non-Tv? A.n))))))
 
 (define st->
   (reduction-relation
    ANFL
-   #:domain T.e
-   #:codomain T.e
+   #:domain A.e
+   #:codomain A.e
    #:arrow -->st
 
-   (-->st (in-hole C (TS (ST e))) (in-hole C e))
-   (-->st (in-hole C (ST (TS e))) (in-hole C e))))
+   (-->st (in-hole C (AS (SA e))) (in-hole C e))
+   (-->st (in-hole C (SA (AS e))) (in-hole C e))))
 
 (define anf->+
   (union-reduction-relations
@@ -162,9 +162,9 @@
 (define-judgment-form ANFL
   #:mode (anf-compile I O)
 
-  [(anf->*j (TS S.e) T.e) (not-anf->+j T.e)
+  [(anf->*j (AS S.e) A.e) (not-anf->+j A.e)
    ---------------------
-   (anf-compile S.e T.e)])
+   (anf-compile S.e A.e)])
 
 (define-judgment-form ANFL
   #:mode (λi->j I O)
@@ -211,20 +211,20 @@
 
   [(λi->j (S_1 S.e_1) (S_2 S.e_2))
    -----------------------------
-   (anf-eval->+ (S_1 (TS S.e_1)) (S_2 (TS S.e_2)))]
+   (anf-eval->+ (S_1 (AS S.e_1)) (S_2 (AS S.e_2)))]
 
-  [(λa->j (S_1 T.e_1) (S_2 T.e_2))
+  [(λa->j (S_1 A.e_1) (S_2 A.e_2))
    -----------------------------
-   (anf-eval->+ (S_1 T.e_1) (S_2 T.e_2))]
+   (anf-eval->+ (S_1 A.e_1) (S_2 A.e_2))]
 
-  [(λa->j (S_1 T.e_1) (S_2 T.e_2))
+  [(λa->j (S_1 A.e_1) (S_2 A.e_2))
    -----------------------------
-   (anf-eval->+ (S_1 (ST T.e_1)) (S_2 (ST T.e_2)))]
+   (anf-eval->+ (S_1 (SA A.e_1)) (S_2 (SA A.e_2)))]
 
-  [(anf->+j T.e_1 T.e_2)
+  [(anf->+j A.e_1 A.e_2)
    ;; TODO: Need to be able to translate the heap.
    -----------------------------
-   (anf-eval->+ (S_1 T.e_1) (S_1 T.e_2))])
+   (anf-eval->+ (S_1 A.e_1) (S_1 A.e_2))])
 
 (define-judgment-form ANFL
   #:mode (anf-eval->* I O)
@@ -238,10 +238,10 @@
    (anf-eval->* (S e) (S e))])
 
 (define-metafunction ANFL
-  compile-anf : S.e -> T.e
+  compile-anf : S.e -> A.e
   [(compile-anf S.e)
-   T.e
-   (where (T.e) ,(apply-reduction-relation* anf->+ (term (TS S.e))))])
+   A.e
+   (where (A.e) ,(apply-reduction-relation* anf->+ (term (AS S.e))))])
 
 (define (step n x)
   (if (zero? n)
@@ -254,7 +254,7 @@
      anf->+
      #:equiv alpha-equivalent?
      (term
-      (TS (letrec ([fact (λ (n)
+      (AS (letrec ([fact (λ (n)
                        (if (eq? n 0)
                            1
                            (* n (fact (- n 1)))))])
@@ -272,7 +272,7 @@
     (test-->>
      anf->+
      #:equiv alpha-equivalent?
-     (term (TS ((if ((x 5) 4) meow bark) 5 2)))
+     (term (AS ((if ((x 5) 4) meow bark) 5 2)))
 
      (term
       (let ((x1 (x 5)))
@@ -284,7 +284,7 @@
     (test-->>
      anf->+
      #:equiv alpha-equivalent?
-     (term (TS (+ (if (let ([x #t]) x) 6 7) 1)))
+     (term (AS (+ (if (let ([x #t]) x) 6 7) 1)))
 
      (term
       (let ([x #t])
@@ -292,11 +292,11 @@
           (if x (j 6) (j 7))))))
 
     (test-judgment-holds
-     (anf-eval->* (() (TS (+ (if (let ([x #t]) x) 6 7) 1)))
+     (anf-eval->* (() (AS (+ (if (let ([x #t]) x) 6 7) 1)))
                   (_ 7)))
 
     (test-judgment-holds
-     (anf-eval->* (() (TS (+ (if (let ([x #t]) x) 6 7) 1)))
+     (anf-eval->* (() (AS (+ (if (let ([x #t]) x) 6 7) 1)))
                   (() (let ([x_2 #t])
                         (letrec ([x_3 (λ (x_1) (+ x_1 1))])
                           (if x_2 (x_3 6) (x_3 7)))))))
