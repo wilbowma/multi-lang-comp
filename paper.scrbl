@@ -1,8 +1,7 @@
 #lang scribble/acmart @acmsmall @nonacm @screen
 
-@title{Compilation by Normalization}
-@(require
-  "bib.rkt")
+@title{Compilation as Multi-Language Semantics}
+@(require "bib.rkt")
 
 @author[
 #:orcid "0000-0002-6402-4840"
@@ -23,9 +22,11 @@ semantic insights, presentation benefits, and verification benefit.
 Normalization of the cross-language redexes performs ahead-of-time (AOT)
 compilation.
 Evaluation in the multi-language models just-in-time (JIT) compilation.
-Confluence implies compiler correctness.
-The semantics provides interesting semantics insight into bootstrapping
-compilers and macro systems.
+Confluence of multi-language reduction implies compiler correctness.
+The reduction systems compose easily, enabling simple veritcal composition of
+separate passes.
+Horizontal composition (linking) is enabled easily be embedding in the
+multi-language.
 }
 
 @include-section{source.scrbl}
