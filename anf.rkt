@@ -140,6 +140,52 @@
     (apply-reduction-relation r e)))
 
 (define-judgment-form ANFL
+  #:mode (not-anf->+j I)
+
+  [(where (#f) ,(maybe-apply-reduction-relation anf->+ (term e_1)))
+   -------------------
+   (not-anf->+j e_1)])
+
+(define-judgment-form ANFL
+  #:mode (anf->j I O)
+
+  [(where (e_p ... e e_r ...) ,(maybe-apply-reduction-relation anf-> (term e_1)))
+   -------------------
+   (anf->j e_1 e)])
+
+(define-judgment-form ANFL
+  #:mode (st->j I O)
+
+  [(where (e_p ... e e_r ...) ,(maybe-apply-reduction-relation st-> (term e_1)))
+   -------------------
+   (st->j e_1 e)])
+
+(define-judgment-form ANFL
+  #:mode (anf->+j I O)
+
+  [(anf->j e_1 e)
+   -------------------
+   (anf->+j (in-hole T e_1) (in-hole T e))]
+
+  [(st->j e_1 e)
+   ----------------
+   (anf->+j e_1 e)])
+
+(define-judgment-form ANFL
+  #:mode (anf->*j I O)
+
+  [(where (e) ,(apply-reduction-relation* anf->+ (term e_1)))
+   -------------------
+   (anf->*j e_1 e)])
+
+(define-judgment-form ANFL
+  #:mode (anf-compile I O)
+
+  [(anf->*j (TS S.e) T.e) (not-anf->+j T.e)
+   ---------------------
+   (anf-compile S.e T.e)])
+
+(define-judgment-form ANFL
   #:mode (λi->j I O)
 
   [(where ((S_2 S.e_2)) ,(maybe-apply-reduction-relation λi-> (term (S_1 S.e_1))))
@@ -152,13 +198,6 @@
   [(where ((S e)) ,(maybe-apply-reduction-relation λa-> (term any_1)))
    -------------------
    (λa->j any_1 (S e))])
-
-(define-judgment-form ANFL
-  #:mode (anf->+j I O)
-
-  [(where (e_p ... e e_r ...) ,(maybe-apply-reduction-relation anf->+ (term e_1)))
-   -------------------
-   (anf->+j e_1 e)])
 
 (define-judgment-form ANFL
   #:mode (anf-eval->+ I O)

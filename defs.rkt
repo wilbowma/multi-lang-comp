@@ -33,6 +33,8 @@
  (rename-out
   [_render-metafunction render-metafunction]
   [_render-judgment-form render-judgment-form])
+ render-judgment-form-rows
+ render-mathpar-judgment
  extend-language-show-union
  extend-language-show-extended-order
  ~a
@@ -41,30 +43,9 @@
 (define ie (emph "i.e."))
 
 (*use-cache?* #f)
-(define source-lang "Scheme-ish")
+(define source-lang (elem "λ" (elem #:style 'superscript "S")))
 (define anf-lang (elem "λ" (elem #:style 'superscript "A")))
 (define anf-multi-lang (elem "λ" (elem #:style 'superscript "→a")))
-
-(set-arrow-pict!
- '-->
- (lambda ()
-   (with-paper-rewriters/proc
-     (lambda ()
-       (text "→" (default-style) (default-font-size))))))
-
-(set-arrow-pict!
- '-->a
- (lambda ()
-   (with-paper-rewriters/proc
-     (lambda ()
-       (text "→ᵃ" (default-style) (default-font-size))))))
-
-(set-arrow-pict!
- '-->st
- (lambda ()
-   (with-paper-rewriters/proc
-     (lambda ()
-       (text "→ˢᵗ" (default-style) (default-font-size))))))
 
 (define todo margin-note)
 
@@ -329,6 +310,24 @@
                 (loop (cons y rst)))]
        [(list x) (list x "")]))))
 
+;; Rewriters!
+(set-arrow-pict!
+ '-->
+ (lambda ()
+   (with-paper-rewriters/proc
+     (lambda ()
+       (def-t "→")))))
+
+(define (a->-arrow) (with-paper-rewriters (def-t " →ᵃ ")))
+(define (st->-arrow) (with-paper-rewriters (def-t " →ˢᵗ ")))
+
+(set-arrow-pict! '-->a a->-arrow)
+
+(set-arrow-pict! '-->st st->-arrow)
+
+(define (anf->+-arrow)
+  (with-paper-rewriters (def-t " ˢ→ᵃ ")))
+
 (define (with-paper-rewriters/proc thunk)
   (with-compound-rewriters
     (['≡
@@ -336,9 +335,50 @@
      ['→
       (λ (lws)
         (list ""
-              (list-ref lws 3)
+              (list-ref lws 2)
               (def-t " → ")
-              (list-ref lws 4)
+              (list-ref lws 3)
+              ""))]
+     ['anf->+j
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (anf->+-arrow)
+              (list-ref lws 3)
+              ""))]
+     ['anf->*j
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ˢ→ᵃ* ")
+              (list-ref lws 3)
+              ""))]
+     ['anf->j
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (a->-arrow)
+              (list-ref lws 3)
+              ""))]
+     ['st->j
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (st->-arrow)
+              (list-ref lws 3)
+              ""))]
+     ['not-anf->+j
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ˢ↛ᵃ ")
+              ""))]
+     ['anf-compile
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ⇓ᵃⁿᶠ ")
+              (list-ref lws 3)
               ""))]
      ['→*
         (λ (lws)
