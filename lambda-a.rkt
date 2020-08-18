@@ -8,25 +8,16 @@
 
 ; λaL is the ANF language.
 (define-extended-language λaL baseL
-  [V ::= '() fixnum boolean (void) x]
-  [n ::= (pair V V) (first V) (second V)
-     (box V) (unbox V) (set-box! V V)
-     (binop V V)
-     (tag-pred V)
-     (V V ...)
-     V]
-  [e ::= (letrec ([x (λ (x ...) e)] ...) e)
-     (let ([x n] ...) e)
-     (begin n ... e)
-     (if V e e)
-     n]
+  [v ::= '() fixnum boolean (void) x]
+  [n ::= v (v ...) (primop v v ...)]
+  [e ::= n (letrec ([x (λ (x ...) e)] ...) e) (let ([x n] ...) e) (begin n ... e) (if v e e)]
 
   #;[Cm ::= (compatible-closure-context e)]
   #;[Cn ::= (compatible-closure-context e #:wrt n)]
   #;[Cv ::= (compatible-closure-context e #:wrt V)]
   [Cv ::= Cn
-      (in-hole Cn (V ... hole V ...))
-      (in-hole Cn (primop V ... hole V ...))
+      (in-hole Cn (v ... hole v ...))
+      (in-hole Cn (primop v ... hole v ...))
       (in-hole Cm (if hole e e))]
   [Cn ::= Cm
       (in-hole Cm (let ([x n] ... [x hole] [x n] ...) e))
@@ -38,8 +29,8 @@
               [x (λ (x ...) e)] ...) e)
      (letrec ([x (λ (x ...) e)] ...) Cm)
      (begin n ... Cm)
-     (if V Cm e)
-     (if V e Cm)]
+     (if v Cm e)
+     (if v e Cm)]
 
   #:binding-forms
   (λ (x ...) e #:refers-to (shadow x ...))
@@ -49,9 +40,8 @@
 
 (define-extended-language λaL-eval λaL
   [S ::= env] ; must be a dict of labels to values
-  [E ::= (let ([x v] ... [x hole] [x n] ...) e)
-     (begin v ... hole e ...)]
-  [v ::= '() fixnum boolean (pair v v) (λ (x ...) e) (void) l])
+  [E ::= (let ([x v] ... [x hole] [x n] ...) e) (begin v ... hole e ...)]
+  [v ::= .... l])
 
 (define λa->composition
   (reduction-relation
@@ -79,8 +69,8 @@
    (let ([x n] ...) (hcompose E e))]
   [(hcompose E (begin n ... e))
    (begin n ... (hcompose E e))]
-  [(hcompose E (if V e_1 e_2))
-   (if V (hcompose E e_1) (hcompose E e_2))]
+  [(hcompose E (if v e_1 e_2))
+   (if v (hcompose E e_1) (hcompose E e_2))]
   [(hcompose E (letrec ([x any] ...) e))
    (letrec ([x any] ...) (hcompose E e))])
 

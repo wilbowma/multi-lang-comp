@@ -27,14 +27,17 @@ implicit in earlier presentations of the A-reductions.
 
 @section{ANF Language}
 @figure["fig:anf-syntax" @elem{@|anf-lang| Syntax}
-  (render-language λaL #:nts '(V n e))
+  (render-language λaL #:nts '(v n e))
 ]
 
 We specify the target language as essentially the source language but with the
 syntax restricted to A-normal form.
 This is defined in @Figure-ref{fig:anf-syntax}.
+For simplicity, we abstract all primitive operations into @render-term[λaL n],
+but still require each operator is applied to the correct number of operands.
+@todo{Should move that to source}
 
-ANF specifies a syntactic distinction between values @render-term[λaL V],
+ANF specifies a syntactic distinction between values @render-term[λaL v],
 computations @render-term[λaL n], and configurations @render-term[λaL e].
 All elimination forms work directly on values rather than arbitrary expressions,
 so control must be manually composed using @render-term[λaL let] and
@@ -82,11 +85,9 @@ strategy.
 
 @(require (only-in pict vc-append vl-append hc-append))
 @figure["fig:anf-lang-red" @elem{@|anf-lang| Reduction}
-  @vc-append[
-  (render-reduction-relation λa->composition #:style 'horizontal)
-  (render-reduction-relation λa->admin #:style 'horizontal)
-  (render-reduction-relation λa->bools #:style 'horizontal)
-  ]
+  (render-reduction-relation
+    (union-reduction-relations λa->composition λa->admin λa->bools)
+    #:style 'horizontal)
 ]
 
 The reduction system for @|anf-lang| is not significantly different from @|source-lang|.
@@ -116,7 +117,7 @@ it by using join-point optimization during compilation to ANF.
 @figure["fig:anf-multi-syn" @elem{@|anf-multi-lang| Syntax (excerpts)}
   (parameterize ([extend-language-show-union #t]
                  [extend-language-show-extended-order #t])
-    (render-language ANFL #:nts '(T.e T.n T.V S.e e)))
+    (render-language ANFL #:nts '(T.e T.n T.v S.e e)))
 ]
 
 Next we define the @|source-lang| + @|anf-lang| multi-language,

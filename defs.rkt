@@ -393,7 +393,8 @@
       (;; because · renders as {} for environment sets.
        ['dot (λ () (text "·" (default-style) (default-font-size)))]
        ;; render nat and mat as n and m for the proofs
-       ['nat (λ () (text "n" (non-terminal-style) (default-font-size)))])
+       ['nat (λ () (text "n" (non-terminal-style) (default-font-size)))]
+       ['hole (λ () (def-t "[·]"))])
       (begin
         (define owsb (white-square-bracket))
         (parameterize* ([default-font-size (get-the-font-size)]

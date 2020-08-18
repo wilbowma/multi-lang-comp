@@ -21,7 +21,7 @@
   [S.x ::= .... ]
 
   ;; Multi-language
-  [T.V ::= .... (TS S.e)]
+  [T.v ::= .... (TS S.e)]
   [T.n ::= .... (TS S.e)]
   [T.e ::= .... (TS S.e)]
   [S.e ::= .... (ST T.e)]
@@ -33,27 +33,7 @@
 
   [C ::= T.Cv]
 
-  [E ::= S.E T.E (TS S.E) (ST T.E)]
-
-  ;[SE ::= S.E (in-hole S.E (ST TE))]
-  ;[TE ::= T.E (in-hole T.E (TS SE))]
-
-  [S ::= S.S]
-  [arith-op ::= S.arith-op]
-  [binop ::= S.binop]
-  [tag-pred ::= S.tag-pred]
-  [v ::= S.v]
-  [env ::= S.env]
-  [fixnum ::= S.fixnum]
-  [l ::= S.l]
-
-  [V ::= T.V] ; shouldn't be needed
-  [n ::= T.n] ; shouldn't be needed
-  [Cm ::= T.Cm]
-  [Cn ::= T.Cn]
-  [Cv ::= T.Cv]
-
-  )
+  [S ::= S.env])
 
 (define anf->
   (reduction-relation
@@ -70,8 +50,7 @@
 
    (-->a
     (in-hole S.E (let ([T.x S.e] ...) S.e_2))
-    (ST (let ([T.x (TS S.e)] ...) (TS (in-hole S.E S.e_2))))
-    #;(where (S.E_!_1 S.E_!_1) (hole S.E)))
+    (ST (let ([T.x (TS S.e)] ...) (TS (in-hole S.E S.e_2)))))
 
    (-->a
     (in-hole S.E (begin S.e_r ... S.e))
@@ -82,17 +61,17 @@
     (ST (letrec ([T.x (λ any (TS S.e_1))] ...) (TS (in-hole S.E S.e)))))
 
    (-->a
-    (in-hole S.E (if T.V S.e_1 S.e_2))
+    (in-hole S.E (if T.v S.e_1 S.e_2))
     (ST (letrec ([j (λ (x) (in-hole S.E x))])
-          (if T.V (TS (j S.e_1)) (TS (j S.e_2)))))
+          (if T.v (TS (j S.e_1)) (TS (j S.e_2)))))
     (fresh j)
     (fresh x)
     (fresh x2)
     (side-condition (not (redex-match? ANFL T.Cm (term S.E)))))
 
    (-->a
-    (in-hole T.Cm (if T.V S.e_1 S.e_2))
-    (ST (if T.V (TS S.e_1) (TS S.e_2))))
+    (in-hole T.Cm (if T.v S.e_1 S.e_2))
+    (ST (if T.v (TS S.e_1) (TS S.e_2))))
 
    (-->a (in-hole S.E T.n) (ST (let ([x T.n]) (TS (in-hole S.E x))))
     (fresh x)
@@ -109,7 +88,7 @@
     (side-condition
      (not (redex-match? ANFL T.Cn (term S.E))))
     (side-condition
-     (not (redex-match? ANFL T.V (term T.n)))))))
+     (not (redex-match? ANFL T.v (term T.n)))))))
 
 (define st->
   (reduction-relation
@@ -120,15 +99,6 @@
 
    (-->st (in-hole C (TS (ST e))) (in-hole C e))
    (-->st (in-hole C (ST (TS e))) (in-hole C e))))
-
-#;(define embed->
-    (reduction-relation
-     ANFL
-     ;#:domain S.e
-     ;#:codomain T.e
-     #:arrow -->embed
-
-     (-->embed S.e (TS S.e))))
 
 (define anf->+
   (union-reduction-relations
