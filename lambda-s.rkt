@@ -2,8 +2,7 @@
 (require
  "base.rkt"
  redex/reduction-semantics
- racket/list
- racket/dict)
+ racket/list)
 
 (provide (all-defined-out))
 
@@ -37,13 +36,12 @@
 ;; NOTE: whitespace sensitive for typesetting in the paper.
 (define-extended-language λiL baseL
   [e ::= (letrec ([x (λ (x ...) e)] ...) e) (e e ...) x
-     (let ([x e] ...) e) (error)
-     (begin e ... e) (void)
+     (let ([x e] ...) e) (begin e ... e) (void)
      (box e) (unbox e) (set-box! e e)
      '() (pair e e) (first e) (second e)
      fixnum (binop e e)
      #t #f (if e e e)
-     (tag-pred e)]
+     (tag-pred e) (error)]
   [x ::= variable-not-otherwise-mentioned]
   #:binding-forms
   (λ (x ...) e #:refers-to (shadow x ...))
@@ -52,40 +50,35 @@
   (let ([x e_1] ...) e_2 #:refers-to (shadow x ...)))
 
 (define-extended-language λiL-eval λiL
-  [S ::= env] ; must be a dict of labels to values
-  [E ::= hole
-     (v ... E e ...)
-     (let ([x v] ... [x E] [x e] ...) e)
-     (begin v ... E e ...)
-     (box E)
-     (unbox E)
-     (set-box! E e)
-     (set-box! v E)
-     (pair E e)
-     (pair v E)
-     (first E)
-     (second E)
-     (if E e e)
-     (binop E e)
-     (binop v E)
-     (tag-pred E)]
-  ;; NOTE: Need vars as variable if we want to reuse in ANF def.
+  ;[S ::= env] ; must be a dict of labels to values
+  [E ::= hole (let ([x v] ... [x E] [x e] ...) e) (begin v ... E e ...)
+     (if E e e) (primop v ... E e ...) (v ... E e ...)]
+  [S ::= ((l hv) ...)]
+  [e ::= .... l]
   [v ::= fixnum boolean '() (void) l x]
   [fv ::= (λ (x ...) e)]
   [hv ::= v fv (pair v v) (box v)])
 
 (define-metafunction λiL-eval
   store-extend : S (l hv) ... -> S
-  [(store-extend any ...)
-   (env-extend any ...)])
+  [(store-extend S (l hv) ...)
+   (env-extend S (l (hv)) ...)])
+
+(define-metafunction λiL-eval
+  store-ref : S l -> hv
+  [(store-ref S l) ,(car (term (env-ref S l)))])
 
 (define (box-error? S v)
   (or (not (redex-match? λiL-eval l v))
       (not (redex-match? λiL-eval (box v)
-                         (dict-ref S v)))))
+                         (term (store-ref ,S ,v))))))
 
 (define (pair-error? v)
   (not (redex-match? λiL-eval (pair e_1 e_2) v)))
+
+(define-metafunction λiL-eval
+  [(non-pair? any)
+   ,(pair-error? (term any))])
 
 ;; NOTE: These are split-up to make type setting easier.
 (define λi->composition
@@ -108,11 +101,7 @@
    (-->λs (S (in-hole E (begin v ... e)))
          (S (in-hole E e)))))
 
-(define-metafunction λiL-eval
-  store-ref : S l -> hv
-  [(store-ref S l) (env-ref S l)])
-
-(define λi->admin
+(define λi->proc
   (reduction-relation
    λiL-eval
    #:domain (S e)
@@ -164,21 +153,21 @@
 
   ;; Boxes
   (-->λs (S (in-hole E (box v)))
-        (S_1 (in-hole E l))
-        (where l ,(fresh-label))
-        (where S_1 ,(dict-set (term S) (term l) (term (box v)))))
+        (S_1 (in-hole E lb))
+        (fresh lb)
+        (where S_1 (store-extend S (lb (box v)))))
   (-->λs (S (in-hole E (unbox l)))
         (S (in-hole E v))
-        (where (box v) ,(dict-ref (term S) (term l))))
+        (where (box v) (store-ref S l)))
   (-->λs (S (in-hole E (unbox v)))
         (S (error))
         (side-condition (box-error? (term S) (term v))))
   (-->λs (S_1 (in-hole E (set-box! l v)))
         (S_2 (in-hole E (void)))
-        (where S_2 ,(dict-set (term S_1) (term l) (term (box v)))))
+        (where S_2 (store-extend S_1 (l (box v)))))
   (-->λs (S (in-hole E (box? l)))
         (S (in-hole E #t))
-        (where (box v) ,(dict-ref (term S) (term l))))
+        (where (box v) (store-ref S l)))
   (-->λs (S (in-hole E (box? v)))
         (S (in-hole E #f))
         (side-condition (box-error? (term S) (term v))))))
@@ -192,26 +181,36 @@
 
    ;; Pairs
    (-->λs (S (in-hole E (pair v_1 v_2)))
-         (S_1 (in-hole E l))
-         (where l ,(fresh-label))
-         (where S_1 (store-extend S (l (pair v_1 v_2)))))
+         (S_1 (in-hole E lb))
+         (fresh lb)
+         (where S_1 (store-extend S (lb (pair v_1 v_2)))))
    (-->λs (S (in-hole E (first l)))
          (S (in-hole E v_1))
          (where (pair v_1 v_2) (store-ref S l)))
-   (-->λs (S (in-hole E (first v)))
-         (S (error))
-         (side-condition (pair-error? (term v))))
    (-->λs (S (in-hole E (second l)))
          (S (in-hole E v_2))
          (where (pair v_1 v_2) (store-ref S l)))
-   (-->λs (S (in-hole E (second v)))
-         (S (error))
-         (side-condition (pair-error? (term v))))
    (-->λs (S (in-hole E (pair? (pair v_1 v_2))))
          (S (in-hole E #t)))
    (-->λs (S (in-hole E (pair? v)))
          (S (in-hole E #f))
-         (side-condition (pair-error? (term v))))))
+         (side-condition (term (non-pair? v))))
+   (-->λs (S (in-hole E (second v)))
+          (S (error))
+          (side-condition (term (non-pair? v))))
+   (-->λs (S (in-hole E (first v)))
+          (S (error))
+          (side-condition (term (non-pair? v))))
+   ))
+
+(define λi->error
+  (reduction-relation
+   λiL-eval
+   #:domain (S e)
+   #:codomain (S e)
+
+   #:arrow -->λs
+   (-->λs (S (in-hole E (error))) (S (error)))))
 
 (define λi->arith
   (reduction-relation
@@ -247,18 +246,20 @@
    ;; Eq
    (-->λs (S (in-hole E (eq? v v)))
          (S (in-hole E #t)))
-   (-->λs (S (in-hole E (eq? v_!_1 v_!_1)))
-         (S (in-hole E #f)))))
+   (-->λs (S (in-hole E (eq? v_1 v_2)))
+          (S (in-hole E #f))
+          (side-condition (term (not-equal? v_1 v_2))))))
 
 (define λi->
   (union-reduction-relations
    λi->composition
-   λi->admin
+   λi->proc
    λi->bools
    λi->boxes
    λi->pairs
    λi->arith
-   λi->eq))
+   λi->eq
+   λi->error))
 
 (define-metafunction λiL-eval
   print-λiL : S hv -> e
@@ -275,6 +276,12 @@
   eval-λiL : e -> v
   [(eval-λiL e)
    ,(second (car (apply-reduction-relation* λi-> (term (() e)))))])
+
+(define-metafunction λiL-eval
+  eval/print-λiL : e -> e
+  [(eval/print-λiL e)
+   ,(let ([x (car (apply-reduction-relation* λi-> (term (() e))))])
+      (term (print-λiL ,(car x) ,(cadr x))))])
 
 (define-term s-eg
   (let ([x (box 0)])
@@ -339,7 +346,7 @@
 
 (test-->> λi->
           #:equiv (lambda (x y)
-                    (alpha-equivalent? λiL (term (print-λiL ,(car x) ,(cadr x))) y))
+                    (alpha-equivalent? λiL-eval (term (print-λiL ,(car x) ,(cadr x))) y))
           (term
            (()
             (let ([x (box 5)])
@@ -352,5 +359,5 @@
           (term (pair 5 (pair 6 '()))))
 
 (test-->> λi-> #:equiv (lambda (x y)
-                         (alpha-equivalent? λiL (term (print-λiL ,(car x) ,(cadr x))) y))
+                         (alpha-equivalent? λiL-eval (term (print-λiL ,(car x) ,(cadr x))) y))
           (term (() s-eg)) (term (pair 120 '())))

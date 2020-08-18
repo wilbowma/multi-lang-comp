@@ -1,5 +1,6 @@
 #lang scribble/acmart @acmsmall @nonacm @screen
 @(require
+  (only-in pict vc-append)
   (only-in scribble/manual deftech tech)
   "lambda-s.rkt"
   "defs.rkt")
@@ -9,7 +10,7 @@
    (nested #:style 'code-inset
      (para "Example:")
      (tabular #:row-properties '((top)) (list (list "> " (render-src e))))
-     (with-paper-rewriters (render-term/pretty-write λiL (term (eval-λiL e))))))
+     (with-paper-rewriters (render-term/pretty-write λiL (term (eval/print-λiL e))))))
 
 @title{Source Language: @source-lang}
 We start by briefly introducing the source language, @|source-lang|.
@@ -20,13 +21,13 @@ realistic compilation to an assembly language requires additional non-trivial
 compilation passes.
 
 @section{Syntax}
-We present the syntax of @source-lang in @Figure-ref{fig:src-syntax}
-
-@figure["fig:src-syntax" @~a{@|source-lang| Syntax}
+@figure["fig:src-syntax" @elem{@|source-lang| Syntax}
   (render-language λiL #:nts '(e x tag-pred arith-op))
 ]
 
-Mutually recursive multi-arity functions are introduced by @render-src{letrec}.
+We present the syntax of @source-lang in @Figure-ref{fig:src-syntax}
+
+Mutually recursive multi-arity functions are introduced by @render-src[letrec].
 For simplicity of presentation, we require functions are named; it is simple to
 translate from a language with anonymous functions.
 
@@ -45,8 +46,6 @@ Purely to support imperative features, we include @render-src[(void)] and the
 without @render-src[let]-binding their unimportant result, and
 @render-src[(void)] represents the unit value, and is implicitly returned by an
 imperative primitive.
-Mutable reference complicate several standard compiler translations, such as
-ANF, compared to their usual presentation in the literature.
 
 Immutable pairs are introduced with @render-src[pair] and @render-src['()] (the
 empty pair), and destructed with @render-src[first] and @render-src[second].
@@ -58,7 +57,7 @@ Mutable references already force us to deal with allocation, but are
 insufficient to represent @tech{interesting} data structures.
 
 The language supports literal fixed-sized integers, @render-src[fixnum]s, and a
-few arithmetic operations, @render-src{arith-ops}: addition, subtraction,
+few arithmetic operations, @render-src[arith-ops]: addition, subtraction,
 mulitplication, and division.
 In practice, @render-src[fixnum]s are less than the machine word-size due to
 object tagging, but this is not important for our model.
@@ -89,63 +88,61 @@ All programs must be well bound, implementing The Scheme Type system.
 This is completely standard and we omit it for brevity.
 
 @section{Dynamic Semantics}
-@figure["fig:src-red-comp" @~a{@|source-lang| Reduction (composition rules)}
-  (render-reduction-relation λi->composition #:style 'horizontal)
+@figure["fig:src-red-comp" @elem{@|source-lang| Reduction (excerpts)}
+(vc-append
+ 25
+ (render-language λiL-eval #:nts '(E S v fv hv))
+ (render-reduction-relation
+  (union-reduction-relations
+   λi->composition
+   λi->arith
+   λi->pairs
+   λi->eq) #:style 'horizontal))
 ]
 
-@figure["fig:src-red-arith" @~a{@|source-lang| Reduction (arithmetic rules)}
-(render-reduction-relation λi->arith #:style 'horizontal)
-]
-
-@figure["fig:src-pairs" @~a{@|source-lang| Reduction (pair rules)}
-(render-reduction-relation λi->pairs #:style 'horizontal)
-]
-
-The language has completely standard left-to-right call-by-value operational
-semantics.
-All operations are dynamically checked to ensure type safety.
 We present the reduction system using evaluation context@todo{cite}.
-@render-src[error] simply throws away the the current evaluation context.
+The language has completely standard left-to-right call-by-value operational
+semantics, specified in the evaluation context.
+For brevity, we abstract all primitive operators using @render-term[λiL primop].
 We use a store to model @render-src[letrec]@todo{cite}, in addition to mutable
 references, which is entirely standard.
+The store @render-term[λiL-eval S] maps an abstract label to heap values
+@render-term[λiL-eval S].
+We define values to be the base values, plus labels.
+We allow names to be values for technical reasons discussed later, although they
+should never appear in evaluation position for whole programs.
+Heap values include all values, functions, pairs, and mutable boxes.
 
-For brevity, we give some representative examples rules, but relegate the
-complete definition the appendix.
+Note that we do not consider funtions or pairs values in the usual sense.
+Instead, they act as effectful operators that perform allocation.
+This is more faithful to the how they are implemented in the compiler, and
+simplifies the implementation of various semantics, such as the @render-term[λiL
+eq?] operator.
 
+The reduction rules are standard, so we give a selection of rules.
+@render-term[λiL-eval letrec] allocates the entire mutually recursive block of
+functions at once, resolving all names in the block to their labels.
+Pair allocates a fresh label, while the first and second projections dereference
+the label from the heap.
+
+All operations are dynamically checked to ensure type safety.
 
 @section{Examples}
 The language allows us to implement favorite example programs from the compilers
-literature, such as factorial:
+literature, such as factorial.
 
-@render-src-eg[
-(letrec ([fact (λ (n)
-                 (if (eq? n 0)
-                     1
-                     (* n (fact (- n 1)))))])
-  (fact 5))
-]
+@(render-prefix-and-finish λiL-eval λi-> (λs->-arrow) 3
+  (()
+   (letrec ([fact (λ (n)
+                    (if (eq? n 0)
+                        1
+                        (* n (fact (- n 1)))))])
+     (fact 5))))
 
-
-Or even and odd:
-
-@render-src-eg[
-(letrec ([not (λ (n) (if n #t #t))]
-         [even (λ (n)
-                 (if (eq? n 0)
-                     #t
-                     (not (odd (- n 1)))))]
-         [odd (λ (n)
-                (if (eq? n 0)
-                    #f
-                    (not (even (- n 1)))))])
-  (pair (even 0) (pair (odd 0) (pair (even 1) (odd 1)))))
-]
-
-In this example, we return a list of answers since our language does lack the
-ability to print to the sreen (or, paper).
-
-Mutable references lets us implement the standard example of two
+Mutable references let us implement the standard example of two
 hopefully-observationally-equivalent counters that use local state.
+The below example is rendered with an implementation of a printer for the
+language which prints pairs properly.
 
 @render-src-eg[
 (let ([counter (let ([b (box 0)])
@@ -155,13 +152,13 @@ hopefully-observationally-equivalent counters that use local state.
                                (set-box! b (+ 1 (unbox b)))
                                (unbox b)))])
                    counter-proc))]
-         [slow-counter (let ([b (box 0)])
-                         (letrec ([slow-counter-proc
-                                   (λ ()
-                                     (begin
-                                       (set-box! b (+ 2 (unbox b)))
-                                       (/ (unbox b) 2)))])
-                           slow-counter-proc))])
+      [slow-counter (let ([b (box 0)])
+                      (letrec ([slow-counter-proc
+                                (λ ()
+                                  (begin
+                                    (set-box! b (+ 2 (unbox b)))
+                                    (/ (unbox b) 2)))])
+                        slow-counter-proc))])
   (pair (counter)
         (pair (counter)
               (pair (slow-counter) (slow-counter)))))
@@ -195,4 +192,3 @@ hopefully-observationally-equivalent counters that use local state.
 @;         (++ true false)
 @;         (++ (pair 2 empty) (pair 1 empty)))))
 @;]
-

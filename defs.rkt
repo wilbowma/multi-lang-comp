@@ -36,8 +36,10 @@
  render-judgment-form-rows
  render-mathpar-judgment
  extend-language-show-union
+ union-reduction-relations
+ reduction-relation
  extend-language-show-extended-order
- ~a
+ term
  (all-defined-out))
 
 (define ie (emph "i.e."))
@@ -69,6 +71,39 @@
 
 (define-syntax-rule (render-src e)
   (render-term λiL e))
+
+(define (apply-reduction-relation-n red n e)
+  (apply-reduction-relation*
+   red
+   e
+   #:stop-when
+   (let ([b (box 0)])
+     (lambda (x)
+       (begin
+         (set-box! b (add1 (unbox b)))
+         (> (unbox b) n))))))
+
+(define-syntax (render-step stx)
+  (syntax-case stx ()
+    [(_ lang red arrow n e)
+     #`(with-paper-rewriters
+         (vl-append
+          (render-term lang e)
+          #,@(for/list ([i (in-range 1 (add1 (syntax-e #'n)))])
+               #`(hc-append
+                  (pad-arrow arrow)
+                  (with-paper-rewriters
+                    (render-term/pretty-write
+                     lang
+                     (car (apply-reduction-relation-n red #,i (term e)))))))))]))
+
+(define-syntax-rule (render-prefix-and-finish lang red arrow n e)
+  (with-paper-rewriters
+    (vl-append
+     (render-step lang red arrow n e)
+     (hc-append
+      (pad-arrow (star-arrow arrow))
+      (with-paper-rewriters (render-term/pretty-write lang (car (apply-reduction-relation* red (term e)))))))))
 
 #;(default-font-size 12)
 #;(metafunction-font-size 10)
@@ -318,6 +353,9 @@
      r t
      (text name Linux-Liberterine-name 7))))
 
+(define (star-arrow base)
+  (hbl-append base (inset (def-t "*") -2 0 0 0)))
+
 (define (λs->-arrow)
   (name-arrow "λs" (def-t "→")))
 
@@ -347,9 +385,7 @@
 
 (define (ANFL->*-arrow)
   (with-paper-rewriters
-    (hbl-append
-     (ANFL->-arrow)
-     (inset (def-t "*") -2 0 0 0))))
+    (star-arrow (ANFL->-arrow))))
 
 (define (anf->+-arrow)
   (with-paper-rewriters (def-t "ˢ→ᵃ")))
@@ -361,6 +397,13 @@
   (with-compound-rewriters
     (['≡
       (curry binop "≡")]
+     ['not-equal?
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ≢ ")
+              (list-ref lws 3)
+              ""))]
      ['substitute
       (λ (lws)
         (list ""
@@ -439,7 +482,7 @@
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (hbl-append (pad-arrow (λs->-arrow)) (def-t "*"))
+              (pad-arrow (star-arrow (λs->-arrow)))
               (list-ref lws 3)
               ""))]
      ['λa->j
@@ -453,7 +496,7 @@
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (hbl-append (pad-arrow (λa->-arrow)) (def-t "*"))
+              (pad-arrow (star-arrow (λa->-arrow)))
               (list-ref lws 3)
               ""))]
      ['anf->+j

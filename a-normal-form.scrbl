@@ -254,31 +254,7 @@ translation context, or a boundary cancellation step.
 
 To see how the translation-as-reduction works, consider the following example,
 taken from @todo{cite flanagan1993}:
-@(require
-  (only-in redex/pict render-term/pretty-write)
-  (only-in redex/reduction-semantics term))
-
-@(require (for-syntax racket/base))
-@(define-syntax (render-step stx)
-   (syntax-case stx ()
-     [(_ n e)
-      #`(with-paper-rewriters
-          (vl-append
-           (render-term ANFL e)
-           #,@(for/list ([i (in-range 1 (add1 (syntax-e #'n)))])
-                #`(hc-append
-                   (anf->+-arrow)
-                   (with-paper-rewriters (render-term/pretty-write ANFL (step #,i (term e))))))))]))
-
-@(define-syntax-rule (render-prefix-and-finish n e)
-   (with-paper-rewriters
-     (vl-append
-      (render-step n e)
-      (hc-append
-       (anf->+-arrow)
-      (with-paper-rewriters (render-term/pretty-write ANFL (car (apply-reduction-relation* anf->+ (term e)))))))))
-
-@(render-prefix-and-finish 6 (TS (+ (+ 2 2) (let ([x 1]) (f 1)))))
+@(render-prefix-and-finish ANFL anf->+ (anf->+-arrow) 6 (TS (+ (+ 2 2) (let ([x 1]) (f 1)))))
 
 We begin translation by embedding the source term in the multi-language in
 translation context, using the @render-term[ANFL TS] boundary.

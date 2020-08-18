@@ -45,7 +45,10 @@
 (define-metafunction baseL
   env-extend : env (l any) ... -> env
   [(env-extend env (l any) ...)
-   ,(append (term env) (term ((l . any) ...)))])
+   ,(for/fold ([d (term env)])
+              ([k (term (l ...))]
+               [v (term (any ...))])
+      (dict-set d k v))])
 
 (define-metafunction baseL
   env-ref : env l -> any
@@ -104,3 +107,7 @@
    #f]
   [(non-fv? any)
    #t])
+
+(define-metafunction baseL
+  [(not-equal? any any) #f]
+  [(not-equal? any_!_1 any_!_1) #t])
