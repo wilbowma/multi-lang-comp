@@ -95,13 +95,13 @@
    #:codomain (S e)
 
    (--> (S (in-hole E (let ([x v] ...) e)))
-        (S (in-hole E (subst-all (x ...) (v ...) e))))
+        (S (in-hole E (subst-all e (x ...) (v ...)))))
 
    (--> (S_1 (in-hole E (letrec ([x fv] ...) e)))
-        (S_2 (in-hole E (subst-all (x ...) (l ...) e)))
+        (S_2 (in-hole E (subst-all e (x ...) (l ...))))
 
         (where (l ...) (fresh-labels x ...))
-        (where (fv_1 ...) ((subst-all (x ...) (l ...) fv) ...))
+        (where (fv_1 ...) ((subst-all fv (x ...) (l ...)) ...))
         (where S_2 (store-extend S_1 (l fv_1) ...)))
 
    (--> (S (in-hole E (begin v ... e)))
@@ -118,14 +118,18 @@
    #:codomain (S e)
 
    (--> (S (in-hole E (l v ..._1)))
-        (S (in-hole E (subst-all (x ...) (v ...) e)))
+        (S (in-hole E (subst-all e (x ...) (v ...))))
         (where (λ (x ..._1) e) (store-ref S l)))
 
    (--> (S (in-hole E (l v ...)))
         (S (error))
         (where (λ (x ...) e) (store-ref S l))
-        (side-condition (not (eq? (length (term (x ...)))
-                                  (length (term (v ...)))))))))
+        (side-condition (term (arity-error (x ...) (v ...)))))
+
+   (--> (S (in-hole E (l v ...)))
+        (S (error))
+        (where hv (store-ref S l))
+        (side-condition (term (non-fv? hv))))))
 
 (define λi->bools
   (reduction-relation
@@ -138,7 +142,7 @@
         (S (in-hole E e_2)))
    (--> (S (in-hole E (if v e_1 e_2)))
         (S (in-hole E e_1))
-        (where (v_!_1 v_!_1) (v #f)))
+        (side-condition (term (non-false? v))))
 
    (--> (S (in-hole E (boolean? #t)))
         (S (in-hole E #t)))
@@ -146,7 +150,7 @@
         (S (in-hole E #t)))
    (--> (S (in-hole E (boolean? v)))
         (S (in-hole E #f))
-        (side-condition (boolean-error? (term v))))))
+        (side-condition (term (non-boolean? v))))))
 
 (define λi->boxes
   (reduction-relation

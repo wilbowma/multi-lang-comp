@@ -41,7 +41,9 @@
 (define-extended-language λaL-eval λaL
   [S ::= env] ; must be a dict of labels to values
   [E ::= (let ([x v] ... [x hole] [x n] ...) e) (begin v ... hole e ...)]
-  [v ::= .... l])
+  [v ::= .... l]
+  [fv ::= (λ (x ...) e)]
+  [hv ::= v fv (pair v v) (box v)])
 
 (define λa->composition
   (reduction-relation
@@ -50,13 +52,13 @@
    #:codomain (S e)
 
    (--> (S (let ([x v] ...) e))
-        (S (subst-all (x ...) (v ...) e)))
+        (S (subst-all e (x ...) (v ...))))
 
-   (--> (S_1 (letrec ([x v] ...) e))
-        (S_2 (in-hole E (subst-all (x ...) (l ...) e)))
+   (--> (S_1 (letrec ([x fv] ...) e))
+        (S_2 (in-hole E (subst-all e (x ...) (l ...))))
 
         (where (l ...) (fresh-labels x ...))
-        (where (v_1 ...) ((subst-all (x ...) (l ...) v) ...))
+        (where (v_1 ...) ((subst-all fv (x ...) (l ...)) ...))
         (where S_2 (store-extend S_1 (l v_1) ...)))
 
    (--> (S (begin v ... e))
@@ -81,14 +83,18 @@
    #:codomain (S e)
 
    (--> (S (in-hole E (l v ..._1)))
-        (S (hcompose E (subst-all (x ...) (v ...) e)))
+        (S (hcompose E (subst-all e (x ...) (v ...))))
         (where (λ (x ..._1) e) (store-ref S l)))
 
    (--> (S (in-hole E (l v ...)))
         (S (error))
         (where (λ (x ...) e) (store-ref S l))
-        (side-condition (not (eq? (length (term (x ...)))
-                                  (length (term (v ...)))))))))
+        (side-condition (term (arity-error (x ...) (v ...)))))
+
+   (--> (S (in-hole E (l v ...)))
+        (S (error))
+        (where hv (store-ref S l))
+        (side-condition (term (non-fv? hv))))))
 
 (define λa->bools
   (reduction-relation
@@ -100,7 +106,7 @@
         (S e_2))
    (--> (S (if v e_1 e_2))
         (S e_1)
-        (where (v_!_1 v_!_1) (v #f)))
+        (side-condition (term (non-false? v))))
 
    (--> (S (in-hole E (boolean? #t)))
         (S (in-hole E #t)))
@@ -108,7 +114,7 @@
         (S (in-hole E #t)))
    (--> (S (in-hole E (boolean? v)))
         (S (in-hole E #f))
-        (side-condition (boolean-error? (term v))))))
+        (side-condition (term (non-boolean? v))))))
 
 (define λa->boxes
   (reduction-relation

@@ -36,12 +36,16 @@
   [S ::= S.env])
 
 (define-metafunction ANFL
-  [(non-Cn any)
+  [(non-Cn? any)
    ,(not (redex-match ANFL T.Cn (term any)))])
 
 (define-metafunction ANFL
-  [(non-Cm any)
+  [(non-Cm? any)
    ,(not (redex-match ANFL T.Cm (term any)))])
+
+(define-metafunction ANFL
+  [(non-Tv? any)
+   ,(not (redex-match ANFL T.v (term any)))])
 
 (define anf->
   (reduction-relation
@@ -74,7 +78,7 @@
           (if T.v (TS (j S.e_1)) (TS (j S.e_2)))))
     (fresh j)
     (fresh x)
-    (side-condition (term (non-Cn S.E))))
+    (side-condition (term (non-Cn? S.E))))
 
    (-->a
     (in-hole T.Cm (if T.v S.e_1 S.e_2))
@@ -93,9 +97,9 @@
     #;(side-condition
      (not (redex-match? ANFL (in-hole S.E_1 (let ([T.x_1 T.n_1] ... [S.x_2 hole] [S.x_3 S.e_3] ...) S.e_2)) (term S.E))))
     (side-condition
-     (not (redex-match? ANFL T.Cn (term S.E))))
+     (term (non-Cn? S.E)))
     (side-condition
-     (not (redex-match? ANFL T.v (term T.n)))))))
+     (term (non-Tv? T.n))))))
 
 (define st->
   (reduction-relation

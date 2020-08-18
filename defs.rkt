@@ -332,12 +332,66 @@
   (with-compound-rewriters
     (['≡
       (curry binop "≡")]
-     ['non-Cn
+     ['substitute
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t "[")
+              (list-ref lws 3)
+              (def-t " := ")
+              (list-ref lws 4)
+              ""))]
+     ['subst-all
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t "[")
+              (list-ref lws 3)
+              (def-t " := ")
+              (list-ref lws 4)
+              ""))]
+     ['non-Cn?
       (λ (lws)
         (list ""
               (list-ref lws 2)
               (def-t " ∉ ")
               (nt-t "T.Cn")))]
+     ['non-Cm?
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ∉ ")
+              (nt-t "T.Cm")))]
+     ['non-Tv?
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ∉ ")
+              (nt-t "T.v")))]
+     ['non-boolean?
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ∉ ")
+              (nt-t "boolean")))]
+     ['non-fixnum?
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ∉ ")
+              (nt-t "fixnum")))]
+     ['non-false?
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ≠ ")
+              (literal-t "#f")))]
+     ['non-fv?
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              (def-t " ∉ ")
+              (nt-t "fv")))]
      ['→
       (λ (lws)
         (list ""

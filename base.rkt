@@ -38,9 +38,9 @@
 (define (min-int word-size) (* -1 (expt 2 (sub1 word-size))))
 
 (define-metafunction baseL
-  [(subst-all () () any) any]
-  [(subst-all (x_1 x ...) (any_1 any_more ...) any)
-   (subst-all (x ...) (any_more ...) (substitute any x_1 any_1))])
+  [(subst-all any () ()) any]
+  [(subst-all any (x_1 x ...) (any_1 any_more ...))
+   (subst-all  (substitute any x_1 any_1) (x ...) (any_more ...))])
 
 (define-metafunction baseL
   env-extend : env (l any) ... -> env
@@ -76,3 +76,31 @@
 
 (define (boolean-error? v)
   (not (redex-match? baseL boolean v)))
+
+(define-metafunction baseL
+  non-boolean? : any -> boolean
+  [(non-boolean? any)
+   ,(boolean-error? (term any))])
+
+
+(define-metafunction baseL
+  non-false? : any -> boolean
+  [(non-false? #f)
+   #f]
+  [(non-false? any)
+   #t])
+
+(define-metafunction baseL
+  arity-error : (any ...) (any ...) -> boolean
+  [(arity-error (any_1 ..._1) (any_2 ..._1))
+   #f]
+  [(arity-error any_1 any_2)
+   #t])
+
+
+(define-metafunction baseL
+  non-fv? : any -> boolean
+  [(non-fv? (λ (any_1 ...) any_2))
+   #f]
+  [(non-fv? any)
+   #t])
