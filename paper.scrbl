@@ -1,6 +1,8 @@
 #lang scribble/acmart @acmsmall @nonacm @screen
 
 @title{Compilation by Normalization}
+@(require
+  "bib.rkt")
 
 @author[
 #:orcid "0000-0002-6402-4840"
@@ -28,3 +30,4 @@ compilers and macro systems.
 
 @include-section{source.scrbl}
 @include-section{a-normal-form.scrbl}
+@(generate-bibliography)

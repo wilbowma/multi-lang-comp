@@ -1,5 +1,6 @@
 #lang scribble/acmart @acmsmall @nonacm @screen
 @(require
+  "bib.rkt"
   scriblib/footnote
   latex-utils/scribble/theorem
   latex-utils/scribble/utils
@@ -11,19 +12,19 @@
 @title{A-normalization}
 Our first pass translates to A-normal form (ANF) to make data flow explicit
 in the syntax.
-Most compiler correctness papers use CPS as this first pass@todo{cite f-to-tal,
-perconti ahmed, pilsner?, kennedy?, ...}.
+CPS is frequently studied in compiler correctness as this first
+pass@~cite{morrisett1998:ftotal kennedy2007 ahmed2011 perconti2014 bowman2018:cps-sigma}.
 CPS has the advantage of making both control flow and data flow explicit in the
 syntax.
 ANF, meanwhile, leaves some aspects of control flow implicit, in particular the
 call-and-return structure of non-tail function calls, and evaluation order.
 We use ANF since there is already a presentation of ANF as a reduction relation,
-namely, the A-reductions@todo{cite amr, flannegan}, which served as inspiration
-for the present work and a good starting point.
+namely, the A-reductions@~cite{sabry1992 flanagan1993}, which served as
+inspiration for the present work and a good starting point.
 
 We extend the A-reductions to support some Scheme-like imperative features, and
-make explicit the multi-language nature of the reduction system that was
-implicit in earlier presentations of the A-reductions.
+make explicit the multi-language semantics@~cite{matthews2007} of the reduction
+system that was implicit in earlier presentations of the A-reductions.
 
 @section{ANF Language}
 @figure["fig:anf-syntax" @elem{@|anf-lang| Syntax}
@@ -116,8 +117,8 @@ it by using join-point optimization during compilation to ANF.
     (render-language ANFL #:nts '(A.e A.n A.v S.e e)))
 ]
 
-Next we define the @|source-lang| + @|anf-lang| multi-language,
-@|anf-multi-lang|.
+Next we define a multi-language semantics@~cite{matthews2007} |source-lang| +
+@|anf-lang|, which we name @|anf-multi-lang|
 We start by defining standard multi-language features, then present the unique
 changes for modeling compilation as a multi-language semantics.
 
@@ -145,16 +146,6 @@ than evaluation context, reflecting the fact that compilation happens for any
 subterm rather than only those being evaluated.
 
 @section{Multi-language A-reductions}
-@;In this multi-language, we define reduction as applying any of the
-@;@|source-lang| reductions to @render-term[ANFL S.e] redex, and any of the
-@;@|anf-lang| reductions to any @render-term[ANFL A.e].
-@;We also add the standard boundary cancelation reductions, defined in
-@;@Figure-ref{fig:anf-boundary-ref}.
-@;
-@;In the terms of @todo{citet matthews2007}, this is similar to a natural embedding.
-@;However, as our goal is compilation rather than interoperability, we give only a
-@;single directly to the natural embedding: source terms can be translated to
-@;target terms.
 @figure["fig:a-red" @elem{The A-reductions}
   (render-reduction-relation anf-> #:style 'horizontal)
 ]
@@ -249,7 +240,7 @@ We define the translation reduction @(anf->+-arrow) in
 translation context, or a boundary cancellation step.
 
 To see how the translation-as-reduction works, consider the following example,
-taken from @todo{cite flanagan1993}:
+taken from @~cite{flanagan1993}:
 @(render-prefix-and-finish ANFL anf->+ (anf->+-arrow) 6 (AS (+ (+ 2 2) (let ([x 1]) (f 1)))))
 
 We begin translation by embedding the source term in the multi-language in
@@ -264,7 +255,7 @@ Reduction continues until we reach ANF.
 
 @(require rackunit)
 @(check-exn values (lambda () (step 11 (term (AS (+ (+ 2 2) (let ([x 1]) (f 1))))))))
-This example finishes in 3 steps in @todo{cite flanagan}, but takes 10 steps in
+This example finishes in 3 steps in @~cite{flanagan1993}, but takes 10 steps in
 our multi-language presentation.
 This is because we make explicit the translation of source values into target
 values, and require extra boundary cancellation steps.
@@ -311,6 +302,16 @@ And finally, we enable a term to take a step translation step, either performing
 an A-reduction or boundary cancellation step.
 This system defines the single-step relation, and we take its reflexive
 transitive closure to define the full multi-language evaluator.
+
+In the terms of @citet{matthews2007}, this reduction system is similar to a
+lump embedding.
+However, as our goal is compilation rather than interoperability, we give only a
+single directly to the natural embedding: source terms can be translated to
+target terms.
+Source term terms lump-embedded in the target are simply compiled before they
+can interoperate.
+Conversely, target terms embedded in the source remain target until the source
+is either finished running or compiling.
 
 Now we can define compiler correctness as confluence.
 
