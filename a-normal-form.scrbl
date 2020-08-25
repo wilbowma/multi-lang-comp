@@ -165,7 +165,7 @@ Similarly with @render-term[ANFL letrec] and @render-term[ANFL begin].
 We can also understand these as normalizing all commuting conversions.
 For @render-term[ANFL if], we merge code across the branches of the
 @render-term[ANFL if] expression.
-Unlike @todo{flanagan1993}, we use the join-point optimization to prevent code
+Unlike @~cite{flanagan1993}, we use the join-point optimization to prevent code
 duplication.
 When the @render-term[ANFL if] appears in non-tail position with respect to the
 evaluation context, we introduce a join point, a local explicit continuationm
@@ -239,9 +239,10 @@ We define the translation reduction @(anf->+-arrow) in
 @Figure-ref{fig:anf-trans-red}, which combines either an A-reduction in
 translation context, or a boundary cancellation step.
 
-To see how the translation-as-reduction works, consider the following example,
-taken from @~cite{flanagan1993}:
-@(render-prefix-and-finish ANFL anf->+ (anf->+-arrow) 6 (AS (+ (+ 2 2) (let ([x 1]) (f 1)))))
+As an example, consider the reduction of following from @citet{flanagan1993}:
+@nested[#:style 'inset
+  (render-prefix-and-finish ANFL anf->+ (anf->+-arrow) 6 (AS (+ (+ 2 2) (let ([x 1]) (f 1)))))
+]
 
 We begin translation by embedding the source term in the multi-language in
 translation context, using the @render-term[ANFL AS] boundary.
@@ -261,7 +262,7 @@ This is because we make explicit the translation of source values into target
 values, and require extra boundary cancellation steps.
 In fact, we take a few short-cuts by allowing an arbitrary target term to reduce
 rather than reducing only target values, which would be more faithful for the
-multi-language interoperability semantics of @todo{matthews2007}, but is not
+multi-language interoperability semantics of @citet{matthews2007}, but is not
 really required for reduction as compiliation.
 
 @(define-syntax-rule (render-anf-eg e)
@@ -355,7 +356,7 @@ Since values are shared across languages, we pick @render-term[ANFL A.v] to be
 The multi-language evaluator captures the semantics of JIT compilation: at any
 point, a source expression can instead be translated to the target language,
 after which time it runs in the target language semantics.
-We could model speculative optimization as a simple @render-term[ANFL if]
+We could model speculative optimization as an @render-term[ANFL if]
 expression: the term @render-term[ANFL (SA (if e_p (AS e) e))], where
 @render-term[ANFL e_p] encodes the dynamic assumption under which the variant
 @render-term[ANFL (AS e)] is executed.
@@ -364,7 +365,7 @@ However, the multi-language evaluator semantics allow us to compile it.
 
 This is not a particularly realistic model of speculative execution.
 In particular, it does not capture fine-grained composable assumptions, nor
-deoptimization from models such as @todo{cite fluckiger}.
+deoptimization from models such as @~cite{flueckiger2018:jit}.
 However, the approach is more general: many compiler translations are easily
 modeled (as we show later) as multi-language semantics, and so we easily derive
 a model of source-to-assembly JIT compiler.

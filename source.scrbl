@@ -3,7 +3,8 @@
   (only-in pict vc-append)
   (only-in scribble/manual deftech tech)
   "lambda-s.rkt"
-  "defs.rkt")
+  "defs.rkt"
+  "bib.rkt")
 
 @(require (only-in redex/pict render-term/pretty-write) (only-in redex/reduction-semantics term))
 @(define-syntax-rule (render-src-eg e)
@@ -100,12 +101,12 @@ This is completely standard and we omit it for brevity.
    λi->eq) #:style 'horizontal))
 ]
 
-We present the reduction system using evaluation context@todo{cite}.
+We present the reduction system using evaluation contexts@~cite{felleisen1992}.
 The language has completely standard left-to-right call-by-value operational
 semantics, specified in the evaluation context.
 For brevity, we abstract all primitive operators using @render-term[λiL primop].
-We use a store to model @render-src[letrec]@todo{cite}, in addition to mutable
-references, which is entirely standard.
+We use a store to model @render-src[letrec], in addition to mutable references,
+and pairs.
 The store @render-term[λiL-eval S] maps an abstract label to heap values
 @render-term[λiL-eval S].
 We define values to be the base values, plus labels.
@@ -123,7 +124,7 @@ The reduction rules are standard, so we give a selection of rules.
 @render-term[λiL-eval letrec] allocates the entire mutually recursive block of
 functions at once, resolving all names in the block to their labels.
 Pair allocates a fresh label, while the first and second projections dereference
-the label from the heap.
+the label from the store.
 
 All operations are dynamically checked to ensure type safety.
 
