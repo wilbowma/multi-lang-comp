@@ -393,6 +393,9 @@
 (define (pad-arrow p)
   (hbl-append (def-t " ") p (def-t " ")))
 
+(define (anf-compile-arrow)
+  (with-paper-rewriters (def-t "⇓ᵃⁿᶠ")))
+
 (define (with-paper-rewriters/proc thunk)
   (with-compound-rewriters
     (['≡
@@ -537,7 +540,7 @@
       (λ (lws)
         (list ""
               (list-ref lws 2)
-              (def-t " ⇓ᵃⁿᶠ ")
+              (pad-arrow (anf-compile-arrow))
               (list-ref lws 3)
               ""))]
      ['anf-eval->+

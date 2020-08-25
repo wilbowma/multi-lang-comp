@@ -383,9 +383,9 @@ assists with debugging@todo{cite haskell report}.
 The main theorem is the @emph{type preservation theorem}, and is stated below.
 
 @mthm[@elem{Type Preservation (ala compiler correctness)} #:tag "type-pres"]{
-If @render-term[λiL (λiL-types Γ e X)] and @render-term[ANFL (anf-compiles e A.e)],
-@render-term[ANFL (anf-compile-Γ Γ A.Γ)],
-@render-term[ANFL (anf-compile-type X A.X)],
+If @render-term[λiL (λiL-types Γ e X)] and @render-term[ANFL (anf-compile e A.e)],
+@render-term[ANFL (anf-compile Γ A.Γ)],
+@render-term[ANFL (anf-compile X A.X)],
 then
 @render-term[λaL (λaL-types A.Γ A.e A.X)]
 }
@@ -398,7 +398,7 @@ reduction}, if one comes from a logic background.
 
 
 @mlem[@elem{Type Preservation (ala "progress and preservation")} #:tag "thm:subj-red"]{
-If @render-term[λiL (λiL-types Γ e_1 A)] and @render-term[λiL (step e_2 e_2)],
+If @render-term[λiL (λiL-types Γ e_1 A)] and @render-term[λiL (λa->j e_2 e_2)],
 then
 @render-term[λiL (λiL-types Γ e_2 A)].
 }
@@ -420,9 +420,10 @@ there exists @render-term[ANFL A.Γ] and @render-term[ANFL A.X] such that
 @render-term[λaL (λaL-types A.Γ A.e A.X)]).
 }
 @tprf[@elem{Proof.}]{
-Since compilation, @render-term[ANFL anf-compile], is defined as normalization with
-respect to the @render-term[ANFL anf->], the proof is simple.
-We instantiate the premise, subject reduction, with the derivation that @render-term[ANFL (anf->*j e A.e)].
+Since compilation, @(anf-compile-arrow), is defined as normalization with
+respect to the @(a->-arrow), the proof is simple.
+We instantiate the premise, subject reduction, with the derivation that
+@render-term[ANFL (anf->*j e A.e)].
 This yield the fact that @render-term[ANFL (ANF-types Γ A.e X)].
 Since @render-term[ANFL A.e] is purely target (@ie, has no boundary terms), and
 the multi-language type system allows source types only under a source-target
