@@ -370,3 +370,73 @@ modeled (as we show later) as multi-language semantics, and so we easily derive
 a model of source-to-assembly JIT compiler.
 Interesting future work would equip the multi-language semantics with better
 semantics for speculative optimization.
+
+@section{Type Preservation is Type Preservation}
+In type-preserving compilation, the goal is to preserve well typedness
+through compilation~@todo{cite TAL, TIL}.
+This requires designing a typed target language and translating types as well as
+terms.
+This provides a simple means of deciding whether linking is safe in the target
+language@todo{cite chlipala}, and provides some simple correctness conditions of the compiler and
+assists with debugging@todo{cite haskell report}.
+The main theorem is the @emph{type preservation theorem}, and is stated below.
+
+@mthm[@elem{Type Preservation (ala compiler correctness)} #:tag "type-pres"]{
+If @render-term[λiL (λiL-types Γ e X)] and @render-term[ANFL (anf-compiles e A.e)],
+@render-term[ANFL (anf-compile-Γ Γ A.Γ)],
+@render-term[ANFL (anf-compile-type X A.X)],
+then
+@render-term[λaL (λaL-types A.Γ A.e A.X)]
+}
+
+When proving syntactic type safety, the strategy is to break the proof into two
+lemmas: @emph{progress} and @emph{preservation}@todo{cite}.
+The latter lemma is the @emph{type preservation lemma}, which refers to proving
+that reduction preserves well typedness, and is also called @emph{subject
+reduction}, if one comes from a logic background.
+
+
+@mlem[@elem{Type Preservation (ala "progress and preservation")} #:tag "thm:subj-red"]{
+If @render-term[λiL (λiL-types Γ e_1 A)] and @render-term[λiL (step e_2 e_2)],
+then
+@render-term[λiL (λiL-types Γ e_2 A)].
+}
+
+When the compiler is presented as a multi-language reduction system, the former
+is @emph{almost} a corollary of the latter.
+We need to generalize subject reduction, and slightly weaken derive type
+preservation.
+Subject reduction is generalized to the closure of the single step reduction,
+which is straightforward.
+Type preservation is weakened to forget the relationship of the target language
+types to the source language.
+
+@mthm[@elem{Type Preservation implies Type Preservation} #:tag "thm:type-pres-type-pres"]{
+If (@render-term[ANFL (ANFL-types Γ e_1 A)] and @render-term[ANFL (anf->*j e_1 e_2)]
+implies @render-term[ANFL (ANF-types Γ e_2 A)]) then
+if (@render-term[λiL (λiL-types Γ e A)] and @render-term[ANFL (anf-compile e A.e)] then
+there exists @render-term[ANFL A.Γ] and @render-term[ANFL A.X] such that
+@render-term[λaL (λaL-types A.Γ A.e A.X)]).
+}
+@tprf[@elem{Proof.}]{
+Since compilation, @render-term[ANFL anf-compile], is defined as normalization with
+respect to the @render-term[ANFL anf->], the proof is simple.
+We instantiate the premise, subject reduction, with the derivation that @render-term[ANFL (anf->*j e A.e)].
+This yield the fact that @render-term[ANFL (ANF-types Γ A.e X)].
+Since @render-term[ANFL A.e] is purely target (@ie, has no boundary terms), and
+the multi-language type system allows source types only under a source-target
+boundary term, we know @render-term[ANFL Γ] and @render-term[ANFL X] must be purely target.
+This means the derivation @render-term[ANFL (ANF-types Γ A.e X)] is trivially a target derivation of
+@render-term[λaL (λaL-types A.Γ A.e A.X)], where @render-term[ANFL A.Γ] is
+picked to be @render-term[ANFL Γ] and @render-term[ANFL A.X] is picked to be
+@render-term[ANFL X].
+}
+
+This slightly weaker type preservation theorem does leave room for one
+additional property that is typically guaranteed by a type preserving compiler:
+that there exists a (compositional) translation from source types to target
+types.
+This property is not specified as explicitly desirably in most of the
+type-preserving compilation literature, but does seem desirable.
+It is unclear if some analogous property of the multi-language semantics could
+guarantee this property.
