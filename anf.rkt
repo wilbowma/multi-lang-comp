@@ -33,7 +33,14 @@
 
   [C ::= A.Cv]
 
-  [S ::= S.env])
+  [S ::= S.env]
+
+  ; For display
+  [H ::= S.env]
+  [S.Γ ::= ∅]
+  [A.Γ ::= ∅]
+  [A.τ ::= ∅]
+  [S.τ ::= ∅])
 
 (define-metafunction ANFL
   [(non-Cn? any)
@@ -175,73 +182,73 @@
 (define-judgment-form ANFL
   #:mode (λi->j I O)
 
-  [(where ((S_2 S.e_2)) ,(maybe-apply-reduction-relation λi-> (term (S_1 S.e_1))))
+  [(where ((H_2 S.e_2)) ,(maybe-apply-reduction-relation λi-> (term (H_1 S.e_1))))
    -------------------
-   (λi->j (S_1 S.e_1) (S_2 S.e_2))])
+   (λi->j (H_1 S.e_1) (H_2 S.e_2))])
 
 (define-judgment-form ANFL
   #:mode (λi->j* I O)
 
   [-------------------
-   (λi->j* (S_1 S.e_1) (S_1 S.e_1))]
+   (λi->j* (H_1 S.e_1) (H_1 S.e_1))]
 
-  [(λi->j (S_1 S.e_1) (S_2 S.e_2))
-   (λi->j* (S_1 S.e_1) (S_3 S.e_3))
+  [(λi->j (H_1 S.e_1) (H_2 S.e_2))
+   (λi->j* (H_1 S.e_1) (H_3 S.e_3))
    -------------------
-   (λi->j* (S_1 S.e_1) (S_3 S.e_3))])
+   (λi->j* (H_1 S.e_1) (H_3 S.e_3))])
 
 (define-judgment-form ANFL
   #:mode (λa->j I O)
 
-  [(where ((S e)) ,(maybe-apply-reduction-relation λa-> (term any_1)))
+  [(where ((H e)) ,(maybe-apply-reduction-relation λa-> (term any_1)))
    -------------------
-   (λa->j any_1 (S e))])
+   (λa->j any_1 (H e))])
 
 (define-judgment-form ANFL
   #:mode (λa->j* I O)
 
   [-------------------
-   (λa->j* (S_1 S.e_1) (S_1 S.e_1))]
+   (λa->j* (H_1 S.e_1) (H_1 S.e_1))]
 
-  [(λa->j (S_1 S.e_1) (S_2 S.e_2))
-   (λa->j* (S_1 S.e_1) (S_3 S.e_3))
+  [(λa->j (H_1 S.e_1) (H_2 S.e_2))
+   (λa->j* (H_1 S.e_1) (H_3 S.e_3))
    -------------------
-   (λa->j* (S_1 S.e_1) (S_3 S.e_3))])
+   (λa->j* (H_1 S.e_1) (H_3 S.e_3))])
 
 (define-judgment-form ANFL
   #:mode (anf-eval->+ I O)
 
-  [(λi->j (S_1 S.e_1) (S_2 S.e_2))
+  [(λi->j (H_1 S.e_1) (H_2 S.e_2))
    -----------------------------
-   (anf-eval->+ (S_1 S.e_1) (S_2 S.e_2))]
+   (anf-eval->+ (H_1 S.e_1) (H_2 S.e_2))]
 
-  [(λi->j (S_1 S.e_1) (S_2 S.e_2))
+  [(λi->j (H_1 S.e_1) (H_2 S.e_2))
    -----------------------------
-   (anf-eval->+ (S_1 (AS S.e_1)) (S_2 (AS S.e_2)))]
+   (anf-eval->+ (H_1 (AS S.e_1)) (H_2 (AS S.e_2)))]
 
-  [(λa->j (S_1 A.e_1) (S_2 A.e_2))
+  [(λa->j (H_1 A.e_1) (H_2 A.e_2))
    -----------------------------
-   (anf-eval->+ (S_1 A.e_1) (S_2 A.e_2))]
+   (anf-eval->+ (H_1 A.e_1) (H_2 A.e_2))]
 
-  [(λa->j (S_1 A.e_1) (S_2 A.e_2))
+  [(λa->j (H_1 A.e_1) (H_2 A.e_2))
    -----------------------------
-   (anf-eval->+ (S_1 (SA A.e_1)) (S_2 (SA A.e_2)))]
+   (anf-eval->+ (H_1 (SA A.e_1)) (H_2 (SA A.e_2)))]
 
   [(anf->+j A.e_1 A.e_2)
    ;; TODO: Need to be able to translate the heap.
    -----------------------------
-   (anf-eval->+ (S_1 A.e_1) (S_1 A.e_2))])
+   (anf-eval->+ (H_1 A.e_1) (H_1 A.e_2))])
 
 (define-judgment-form ANFL
   #:mode (anf-eval->* I O)
 
-  [(anf-eval->+ (S_1 e_1) (S_2 e_2))
-   (anf-eval->* (S_2 e_2) (S_3 e_3))
+  [(anf-eval->+ (H_1 e_1) (H_2 e_2))
+   (anf-eval->* (H_2 e_2) (H_3 e_3))
    -----------------------------
-   (anf-eval->* (S_1 e_1) (S_3 e_3))]
+   (anf-eval->* (H_1 e_1) (H_3 e_3))]
 
   [-----------------------------
-   (anf-eval->* (S e) (S e))])
+   (anf-eval->* (H e) (H e))])
 
 (define-metafunction ANFL
   compile-anf : S.e -> A.e

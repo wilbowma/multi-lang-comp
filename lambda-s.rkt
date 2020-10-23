@@ -43,6 +43,10 @@
      #t #f (if e e e)
      (tag-pred e) (error)]
   [x ::= variable-not-otherwise-mentioned]
+
+  ;; for display
+  [Γ ::= ∅]
+  [τ ::= ∅]
   #:binding-forms
   (λ (x ...) e #:refers-to (shadow x ...))
   (letrec ([x any] ...) #:refers-to (shadow x ...)

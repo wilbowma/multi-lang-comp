@@ -32,6 +32,10 @@
      (if v Cm e)
      (if v e Cm)]
 
+  ;; For display only
+  [Γ ::= ∅]
+  [τ ::= ∅]
+
   #:binding-forms
   (λ (x ...) e #:refers-to (shadow x ...))
   (letrec ([x any] ...) #:refers-to (shadow x ...)

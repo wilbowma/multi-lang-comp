@@ -565,7 +565,32 @@
                             (inset (def-t "*") -2 0 0 0)
                             (def-t " "))
                 (list-ref lws 5)
-                ""))])
+                ""))]
+     ['ANFL-types
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              " ⊢ "
+              (list-ref lws 3)
+              " : "
+              (list-ref lws 4)))]
+     ['λiL-types
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              " ⊢ "
+              (list-ref lws 3)
+              " : "
+              (list-ref lws 4)))]
+     ['λaL-types
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              " ⊢ "
+              (list-ref lws 3)
+              " : "
+              (list-ref lws 4)))]
+     )
     (with-atomic-rewriters
       (;; because · renders as {} for environment sets.
        ['dot (λ () (text "·" (default-style) (default-font-size)))]
