@@ -44,6 +44,28 @@
 @;based on multi-language semantics.
 @;}
 
+
+@todo{a pass for typos:}
+@;
+@; - "translatem then step"
+@; - "enabled easily be embedding"
+@; - "it's reduction rules"
+@; - you used "I" right before 1.1 and then "we" in 1.1
+@; - "The source language is standard dynamically typed functional imperative" lotta adjectives with no noun in sight lol
+@; - "mulit-language"
+@; - "meta-varaible"
+@; - "These are essentially standard, however" I prefer semicolons or periods before "however" :man-shrugging:
+@; - "cancelation" -> "cancellation" if you want to look more Canadian
+@; - "Thsi extend"
+@; - "it’s intuition"
+@; - "a ANF context"
+@; - "the translation reduction system either perform"
+@; - "which is use in"
+@; - "which significantly complicated" (I'm assuming you want present tense)
+@; - "as done by (Flückiger et al. 2018)" is there a different form for \citet?
+@; - Theorem 3 looks formatted weird, idk
+@; - also fig. 1 goes off the page but you prob. already saw that (edited)
+
 @section{Extended Abstract}
 Multi-language semantics were introduced as a syntactic method for modeling the
 semantics of inter-language interopability@~cite{matthews2007}.
