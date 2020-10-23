@@ -58,19 +58,22 @@
    ; #t
    #:arrow -->a
 
-   (-->a A.e (SA A.e))
+   (-->a A.e (SA A.e) "A-normal")
 
    (-->a
     (in-hole S.E (let ([A.x S.e] ...) S.e_2))
-    (SA (let ([A.x (AS S.e)] ...) (AS (in-hole S.E S.e_2)))))
+    (SA (let ([A.x (AS S.e)] ...) (AS (in-hole S.E S.e_2))))
+    "A-merge_l")
 
    (-->a
     (in-hole S.E (begin S.e_r ... S.e))
-    (SA (begin (AS S.e_r) ... (AS (in-hole S.E S.e)))))
+    (SA (begin (AS S.e_r) ... (AS (in-hole S.E S.e))))
+    "A-merge_b")
 
    (-->a
     (in-hole S.E (letrec ([A.x (λ any S.e_1)] ...) S.e))
-    (SA (letrec ([A.x (λ any (AS S.e_1))] ...) (AS (in-hole S.E S.e)))))
+    (SA (letrec ([A.x (λ any (AS S.e_1))] ...) (AS (in-hole S.E S.e))))
+    "A-merge_r")
 
    (-->a
     (in-hole S.E (if A.v S.e_1 S.e_2))
@@ -78,13 +81,16 @@
           (if A.v (AS (j S.e_1)) (AS (j S.e_2)))))
     (fresh j)
     (fresh x)
-    (side-condition (term (non-Cn? S.E))))
+    (side-condition (term (non-Cn? S.E)))
+    "A-join")
 
    (-->a
     (in-hole A.Cm (if A.v S.e_1 S.e_2))
-    (SA (if A.v (AS S.e_1) (AS S.e_2))))
+    (SA (if A.v (AS S.e_1) (AS S.e_2)))
+    "A-merge-if")
 
    (-->a (in-hole S.E A.n) (SA (let ([x A.n]) (AS (in-hole S.E x))))
+    "A-lift"
     (fresh x)
     ; Optimizations
     ; TODO: This optimization can be enabled for "predicates"?
