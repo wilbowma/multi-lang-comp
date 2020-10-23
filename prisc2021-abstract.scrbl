@@ -58,7 +58,7 @@ definition of the compiler at least for simple compositional transformations.
 However, multi-language semantics also duplicate effort.
 The compiler is essentially defined twice: once on open terms as a syntactic
 translation, and once on closed terms as a multi-language boundary reduction.
-The two definitions occassionally differ slightly.
+The two definitions occasionally differ slightly.
 For example, defining multi-language closure conversion requires taking
 advantage of the fact that the term must be closed, while the normal definition
 as a translation is very focused on free variables@~cite["ahmed2011" "new2016a"].
