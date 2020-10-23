@@ -37,7 +37,7 @@
 @;the compiler.
 @;The reduction systems compose easily, enabling simple vertical composition of
 @;separate passes.
-@;Horizontal composition (linking) is enabled easily be embedding in the
+@;Horizontal composition (linking) is enabled easily by embedding in the
 @;multi-language.
 @;The multi-language semantics is already a starting point for certain approaches
 @;to secure compilation, so this could simplify approaches to secure compilation
@@ -45,26 +45,8 @@
 @;}
 
 
-@todo{a pass for typos:}
 @;
-@; - "translatem then step"
-@; - "enabled easily be embedding"
-@; - "it's reduction rules"
-@; - you used "I" right before 1.1 and then "we" in 1.1
-@; - "The source language is standard dynamically typed functional imperative" lotta adjectives with no noun in sight lol
-@; - "mulit-language"
-@; - "meta-varaible"
-@; - "These are essentially standard, however" I prefer semicolons or periods before "however" :man-shrugging:
-@; - "cancelation" -> "cancellation" if you want to look more Canadian
-@; - "Thsi extend"
-@; - "it’s intuition"
-@; - "a ANF context"
-@; - "the translation reduction system either perform"
-@; - "which is use in"
-@; - "which significantly complicated" (I'm assuming you want present tense)
-@; - "as done by (Flückiger et al. 2018)" is there a different form for \citet?
 @; - Theorem 3 looks formatted weird, idk
-@; - also fig. 1 goes off the page but you prob. already saw that (edited)
 
 @section{Extended Abstract}
 Multi-language semantics were introduced as a syntactic method for modeling the
@@ -92,29 +74,28 @@ system (over open terms) in a multi-language semantics.
 This reduces duplication in the definition of the compiler and removes the
 duplication in validation.
 
-Modeling a compiler as a multi-language semantics provides interesting semantics
+Modeling a compiler as a multi-language semantics provides interesting semantic
 insights.
 Normalization of the cross-language redexes performs ahead-of-time (AOT)
 compilation; the normal form with respect to these redexes is a target language
 term.
-Nondeterministic evaluation in the multi-language models just-in-time (JIT)
-compilation, as a term can either step in the source, or translatem then step in
-the target.
+Nondeterministic evaluation in the multi-language semantics models just-in-time
+(JIT) compilation: a term can either step in the source, or translate then
+step in the target.
 Various compiler correctness theorems are implied by standard semantics results.
-For example confluence of multi-language reduction implies compositional
+For example, confluence of multi-language reduction implies compositional
 compiler correctness.
 Subject reduction of the multi-language reduction implies type-preservation of
 the compiler.
 
 The semantics also has useful properties valued for compiler validation.
-The reduction systems compose easily, enabling simple vertical composition of
+Reduction systems compose easily, enabling simple vertical composition of
 separate passes.
-Strong horizontal composition (linking) is enabled easily be embedding in the
+Strong horizontal composition (linking) is enabled easily by embedding in the
 multi-language.
 Multi-language semantics have already been used as a framework for studying full
-abstraction, so specifying the compiler as a multi-language semantics fits
-neatly into an existing framework for secure compilation, although I have not
-discovered any simplications yet.
+abstraction@todo{cite}, so specifying the compiler as a multi-language semantics fits
+neatly into an existing framework for secure compilation.
 
 @;In this talk, I'll describe part of a compiler from a Scheme-like language to an
 @;x64-64-like language designed completely as a series of multi-language
@@ -128,14 +109,16 @@ discovered any simplications yet.
 @;  (render-language λiL #:nts '(e x tag-pred arith-op))
 @;]
 
-The approach seems general; we have developed a 5-pass model compiler
-from a Scheme-like language to an x86-64-like language.
+The approach generalalizes from high-level to low-level transformations of a
+wide array of lanugage features.
+We have developed a 5-pass model compiler from a Scheme-like language to an
+x86-64-like language.
 Below, we model one interesting compiler pass: reduction to A-normal form (ANF).
-This pass is particularly interesting, since it's reduction rules must
+This pass is particularly interesting, since its reduction rules must
 manipulate the context.
 
-The source language is standard dynamically typed functional imperative, modeled
-on Scheme.
+The source is a standard dynamically typed functional imperative language,
+modeled on Scheme.
 It has a standard call-by-value heap-based small-step semantics, written
 @render-term[λiL (λi->j e_1 e_2)].
 We omit the syntax and reduction rules for brevity.
@@ -162,14 +145,14 @@ computation stack as this is now encoded in the syntax.
 
 To develop a multi-language semantics, we embed syntactic terms from each
 language into a single syntax, defined in @Figure-ref{fig:anf-multi-syn}.
-In the mulit-language, we use meta-variable prefixes to distinguish terms in
+In the multi-language, we use meta-variable prefixes to distinguish terms in
 each language.
 The prefix @render-term[ANFL S.] indicates a meta-variable from the source
 and the prefix @render-term[ANFL A.] indicates a meta-variable from the ANF
 intermediate language.
 For example, the meta-variable @render-term[ANFL S.e] refers to the source
 expressions.
-We extend each meta-varaible with boundary terms @render-term[ANFL (SA A.e)]
+We extend each meta-variable with boundary terms @render-term[ANFL (SA A.e)]
 ("Source on the outside, ANF on the inside") and @render-term[ANFL (AS S.e)]
 ("ANF on the outside, Source on the inside").
 
@@ -183,8 +166,8 @@ In fact, the original presentation of ANF was as a reduction system, and this is
 where A-normal form derives its name---the normal form with respect to the
 A-reductions@~cite{flanagan1993}.
 We define the A-reduction in @Figure-ref{fig:a-red}.
-These are essentially standard, however, we modify them to make boundary
-transitions explicit.
+These are essentially standard, but we modify them to make boundary transitions
+explicit.
 The A-reductions have the form @render-term[ANFL (anf->j S.e S.e)], reducing
 source expressions in the multi-language.
 A-normal form corresponds to a @render-term[ANFL SA] boundary around a purely
@@ -204,7 +187,7 @@ A-reductions in certain empty or trivial evaluation contexts.
 ]
 
 We supplement the multi-language A-reductions with the standard multi-language
-boundary cancelation reductions, given in @Figure-ref{fig:anf-boundary-red}.
+boundary cancellation reductions, given in @Figure-ref{fig:anf-boundary-red}.
 These apply under any multi-language context @render-term[ANFL C].
 
 
@@ -216,16 +199,16 @@ These apply under any multi-language context @render-term[ANFL C].
    (with-paper-rewriters (render-judgment-form-rows anf->+j '(2))))
 ]
 
-Next, we define the translation reduction system, @Figure-ref{fig:anf-trans-red}.
-Thsi extend the A-reduction to apply under any translation context
+In @Figure-ref{fig:anf-trans-red} we define the translation reduction system.
+This extends the A-reduction to apply under any translation context
 @render-term[ANFL T].
 This construction of the translation context for ANF is a little unusual, but
-it's intuition is simple: it identifies a pure source expression under any
-context, including under a target/source boundary.
-The context @render-term[ANFL A.Cm] corresponds to a ANF context that can have
+the intuition is simple: a translation context identifies a pure source
+expression under any context, including under a target/source boundary.
+The context @render-term[ANFL A.Cm] corresponds to an ANF context that can have
 any expression in the hole.
-In one step, the translation reduction system either perform one A-reduction or
-one boundary cancellation.
+In one step, the translation reduction system can perform either one A-reduction
+or one boundary cancellation.
 
 From the translation reduction, we can easily define ahead-of-time (AOT)
 compilation as normalization with respect to translation reductions (both
@@ -237,24 +220,26 @@ A-reductions and boundary cancellation).
   @(with-paper-rewriters (render-judgment-form-rows anf-eval->+'(2 2 1)))
 }
 
-Finally, we define the multi-language semantics, @Figure-ref{fig:anf-multi-red}.
+Finally, we define the multi-language semantics in
+@Figure-ref{fig:anf-multi-red}.
 This defines all possible transitions in the multi-language.
 A term can either take a step in the source language, or a step in the
 translation reduction, or a step in the target language.
 The multi-language reduction is indexed by a heap, @render-term[ANFL S], which
-is use in the the source and target reduction semantics.
+is used by the the source and target reduction semantics but not the translation
+reductions.
 
 Note that terms already in the heap are not translated, which corresponds to an
 assumption that the language memory models are identical.
 We could lift this restriction by extending translation reduction to apply in
-the heap, which significantly complicated the semantics.
+the heap, which significantly complicates the semantics.
 
 We can intuitively understand how the multi-language semantics models
 just-in-time (JIT) compilation.
 The definition allows running an interpreter (reducing in the source), or
 JIT compilation (translation then reducing in the target).
 This does not model speculative optimization; equipping the source with
-assumption instructions as done by @~cite{flueckiger2018:jit} might support
+assumption instructions as done by @citet{flueckiger2018:jit} might support
 modeling this.
 
 We derive compiler correctness from confluence.
