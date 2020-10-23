@@ -174,6 +174,8 @@ For example, the A-lift rule lifts a trivial computation, let-binding it and
 providing the let-bound name (a value) in evaluation position, explicitly
 sequencing the computation @render-term[ANFL A.n] with the evaluation context
 @render-term[ANFL S.E].
+The side-conditions syntactically encode termination conditions, preventing
+A-reductions in certain empty or trivial evaluation contexts.
 
 @figure["fig:anf-boundary-red" @elem{@|anf-multi-lang| Boundary Reductions}
   (render-reduction-relation st-> #:style 'horizontal)
@@ -192,7 +194,7 @@ These apply under any multi-language context @render-term[ANFL C].
    (with-paper-rewriters (render-judgment-form-rows anf->+j '(2))))
 ]
 
-Finally, we define the translation reduction system, @Figure-ref{fig:anf-trans-red}.
+Next, we define the translation reduction system, @Figure-ref{fig:anf-trans-red}.
 Thsi extend the A-reduction to apply under any translation context
 @render-term[ANFL T].
 This construction of the translation context for ANF is a little unusual, but
@@ -213,10 +215,12 @@ A-reductions and boundary cancellation).
   @(with-paper-rewriters (render-judgment-form-rows anf-eval->+'(2 2 1)))
 }
 
-Finally, we define the multi-language semantics, @Figure-ref{fig:anf-multi-ref}.
+Finally, we define the multi-language semantics, @Figure-ref{fig:anf-multi-red}.
 This defines all possible transitions in the multi-language.
 A term can either take a step in the source language, or a step in the
 translation reduction, or a step in the target language.
+The multi-language reduction is indexed by a heap, @render-term[ANFL S], which
+is use in the the source and target reduction semantics.
 
 Note that terms already in the heap are not translated, which corresponds to an
 assumption that the language memory models are identical.
