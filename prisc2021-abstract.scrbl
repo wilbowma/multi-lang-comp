@@ -114,9 +114,9 @@ It has a call-by-value heap-based small-step semantics,
 @render-term[ANFL (λi->j (H S.e_1) (H S.e_2))], where @render-term[ANFL H]
 represents the heap and @render-term[ANFL S.e] is represents a source
 expression.@note{
-We use a prefix followed by a dot (.) to distinguish terms in each language.
-The prefix @emph{S} a source term and the prefix @emph{A} ANF intermediate
-language term.
+We use a prefix followed by a dot (.) to distinguish terms in each
+language---the prefix @emph{S} for source terms and the prefix @emph{A} for ANF
+terms.
 }
 We omit the syntax and reduction rules for brevity.
 
