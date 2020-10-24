@@ -45,41 +45,44 @@
 @;}
 
 
-@;
-@; - Theorem 3 looks formatted weird, idk
-
 @section{Extended Abstract}
+We introduce a novel approach to modeling a compiler as a reduction system (over
+open terms) in a multi-language semantics, reducing duplication, providing
+simple models of various forms of compilation, and connecting standard semantic
+results to standard compiler correctness results.
+
 Multi-language semantics were introduced as a syntactic method for modeling the
 semantics of inter-language interopability@~cite{matthews2007}, but have been
 applied to syntactic approaches to compiler correcntess and secure
 compilation@~cite["ahmed2011" "perconti2014" "ahmed2015:snapl" "new2016a"
 "patterson2017:linkingtypes"].
-They are useful for modeling cross-language linking and secure compilation since
-all terms can be syntactically embedded in a single language, rather than
-requiring a separate semantic notion of interoperability.
+They have been used to model cross-language linking and secure compilation
+syntactically.
+All terms can be embedded in a single language, rather than requiring a separate
+cross-language semantics of interoperability.
 
-However, multi-language semantics duplicate some effort.
-The compiler is defined twice: once on open terms as a syntactic
-translation, and once on closed terms as a multi-language boundary reduction.
-The two definitions occasionally differ slightly@~cite["ahmed2011" "new2016a"].
-One must also prove correspondances between the multi-language reduction and the
-compiler, increasing validation effort.
+Unfortauntely, this used of multi-language semantics duplicates effort.
+The compiler is defined twice: on open terms as a syntactic
+translation, and on closed terms as a multi-language boundary
+reduction@~cite["ahmed2011" "new2016a"].
+One must also prove correspondances between multi-language reduction and the
+compiler.
 
-Intsead, we can model the compiler as a reduction system (over open terms) in a
-multi-language semantics, reducing duplication and providing interesting
-semantic insights.
+When the entire compiler is defined as a multi-language reduction system, we
+remove this duplication effort and derive various models and theorems from the
+semantics.
 Normalization of the cross-language redexes performs ahead-of-time (AOT)
 compilation; the normal form with respect to these redexes is a target language
 term.
-We can model just-in-time (JIT) compilation as nondeterministic evaluation in
-the multi-language: a term can either step in the source, or translate then step
+Nondeterministic evaluation in the multi-language models just-in-time (JIT)
+compilation: a term can either step in the source, or translate then step
 in the target.
-Various compiler correctness theorems are implied by standard semantics results.
+Some compiler correctness theorems are implied by standard semantics results.
 For example, confluence of multi-language reduction implies compositional
 compiler correctness, and subject reduction implies type-preservation of the
 compiler.
 
-The semantics retains properties valued for compiler validation.
+The model retains properties valued for compiler construction and validation.
 Reduction systems compose easily, ensuring vertical composition of
 separate passes.
 Strong horizontal composition is enabled easily by embedding in the
@@ -97,17 +100,17 @@ multi-language and syntactic linking.
 @;  (render-language λiL #:nts '(e x tag-pred arith-op))
 @;]
 
-The approach generalalizes from high-level to low-level transformations of a
+Our approach generalalizes from high-level to low-level transformations of a
 wide array of lanugage features.
 We have developed a 5-pass model compiler from a Scheme-like language to an
 x86-64-like language.
 Below, we model one interesting compiler pass: reduction to A-normal form (ANF).
-This pass is particularly interesting, since its reduction rules must
-manipulate the context.
+This pass is particularly interesting, since the A-reductions are
+non-local: they reorder a term with respect to its context.
 
 The source is a standard dynamically typed functional imperative language,
 modeled on Scheme.
-It has a standard call-by-value heap-based small-step semantics,
+It has a call-by-value heap-based small-step semantics,
 @render-term[ANFL (λi->j (H S.e_1) (H S.e_2))], where @render-term[ANFL H]
 represents the heap and @render-term[ANFL S.e] is represents a source
 expression.@note{
@@ -123,14 +126,13 @@ We omit the syntax and reduction rules for brevity.
 @;]
 
 The target language is essentially the same, but the syntax is restricted to
-A-normal form: all elimination forms (meta-variable @render-term[ANFL A.n]) work
-directly on values @render-term[ANFL A.v], expressions @render-term[ANFL A.e]
-cannot be nested but instead sub-expressions must be manually bound to names
-similar to monadic form.
+A-normal form: all computations @render-term[ANFL A.n] require values
+@render-term[ANFL A.v] as operands, expressions @render-term[ANFL A.e]
+cannot be nested but instead sub-expressions must be manually bound to names.
 The reduction relation, written @render-term[ANFL (λa->j (H A.e_1) (H A.e_2))],
 takes advantage of this restriction and requires fewer congruence rules.
 Viewed as an abstract machine, the reduction relation no longer requries a
-computation stack as this is now encoded in the syntax.
+computation stack, which is encoded in the syntax.
 
 @figure["fig:anf-multi-syn" @elem{@|anf-multi-lang| Syntax (excerpts)}
   (parameterize ([extend-language-show-union #t]
@@ -141,12 +143,12 @@ computation stack as this is now encoded in the syntax.
 To develop a multi-language semantics, we embed syntactic terms from each
 language into a single syntax, defined in @Figure-ref{fig:anf-multi-syn}.
 We extend each meta-variable with boundary terms @render-term[ANFL (SA A.e)]
-("Source on the outside, ANF on the inside") and @render-term[ANFL (AS S.e)]
-("ANF on the outside, Source on the inside").
+(``Source on the outside, ANF on the inside'') and @render-term[ANFL (AS S.e)]
+(``ANF on the outside, Source on the inside'').
 
 @(require (only-in redex/pict render-reduction-relation-rules))
 @figure["fig:a-red" @elem{The A-reductions (excerpts)}
-  (parameterize ([render-reduction-relation-rules '("A-normal" "A-merge_l" "A-merge_b" "A-join" "A-lift")])
+  (parameterize ([render-reduction-relation-rules '("A-normal" "A-merge-l" "A-merge-b" "A-join" "A-lift")])
     (render-reduction-relation anf-> #:style 'compact-vertical))
 ]
 The translation to ANF can be viewed as a reduction system in the multi-language.
@@ -213,7 +215,7 @@ Finally, we define the multi-language semantics in
 This defines all possible transitions in the multi-language.
 A term can either take a step in the source language, or a step in the
 translation reduction, or a step in the target language.
-The multi-language reduction is indexed by a heap, @render-term[ANFL H], which
+Multi-language reduction is indexed by a heap, @render-term[ANFL H], which
 is used by the the source and target reduction semantics but not the translation
 reductions.
 
@@ -233,7 +235,7 @@ modeling this.
 We derive compiler correctness from confluence.
 
 @mthm[@elem{Confluence} #:tag "thm:anf:confluence"]{
-If @render-term[ANFL (anf-eval->* (H e) (H_1 e_1))] and
+If @render-term[ANFL (anf-eval->* (H e) (H_1 e_1))] and @exact{\\}
 @render-term[ANFL (anf-eval->* (H e) (H_2 e_2))] then
 @render-term[ANFL (anf-eval->* (H_1 e_1) (H_3 e_3))] and
 @render-term[ANFL (anf-eval->* (H_2 e_2) (H_3 e_3))]
@@ -244,6 +246,7 @@ both compositional correctness of the AOT and JIT compilers.
 As an example, whole-program correctness is a trivial corollary.
 
 @mcor[@elem{Whole-Program Correctness} #:tag "thm:anf:correct"]{
+@exact{\mbox{}\\}
 If
 @render-term[ANFL (λi->j* (() S.e) (H S.v))] and
 @render-term[ANFL (anf-compile S.e A.e)] then
@@ -259,7 +262,7 @@ simple, but the same idea applies to languages with more complex type systems.
 
 @mthm[@elem{Subject Reduction implies Type Preservation} #:tag "thm:type-pres-type-pres"]{
 If (@render-term[ANFL (ANFL-types Γ e_1 τ)] and @render-term[ANFL (anf->*j e_1 e_2)]
-implies @render-term[ANFL (ANFL-types Γ e_2 τ)]) then
+implies @render-term[ANFL (ANFL-types Γ e_2 τ)]) then@exact{\\}
 if (@render-term[ANFL (λiL-types S.Γ S.e S.τ)] and @render-term[ANFL (anf-compile S.e A.e)] then
 ∃@render-term[ANFL A.Γ],@render-term[ANFL A.τ].
 @render-term[ANFL (λaL-types A.Γ A.e A.τ)]).

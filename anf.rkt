@@ -70,17 +70,17 @@
    (-->a
     (in-hole S.E (let ([A.x S.e] ...) S.e_2))
     (SA (let ([A.x (AS S.e)] ...) (AS (in-hole S.E S.e_2))))
-    "A-merge_l")
+    "A-merge-l")
 
    (-->a
     (in-hole S.E (begin S.e_r ... S.e))
     (SA (begin (AS S.e_r) ... (AS (in-hole S.E S.e))))
-    "A-merge_b")
+    "A-merge-b")
 
    (-->a
     (in-hole S.E (letrec ([A.x (λ any S.e_1)] ...) S.e))
     (SA (letrec ([A.x (λ any (AS S.e_1))] ...) (AS (in-hole S.E S.e))))
-    "A-merge_r")
+    "A-merge-r")
 
    (-->a
     (in-hole S.E (if A.v S.e_1 S.e_2))
