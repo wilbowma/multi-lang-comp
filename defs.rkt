@@ -430,19 +430,19 @@
         (list ""
               (list-ref lws 2)
               (def-t " ∉ ")
-              (nt-t "T.Cn")))]
+              (nt-t "A.Cn")))]
      ['non-Cm?
       (λ (lws)
         (list ""
               (list-ref lws 2)
               (def-t " ∉ ")
-              (nt-t "T.Cm")))]
+              (nt-t "A.Cm")))]
      ['non-Tv?
       (λ (lws)
         (list ""
               (list-ref lws 2)
               (def-t " ∉ ")
-              (nt-t "T.Tv")))]
+              (nt-t "A.v")))]
      ['non-boolean?
       (λ (lws)
         (list ""

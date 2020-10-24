@@ -263,7 +263,7 @@ simple, but the same idea applies to languages with more complex type systems.
 @mthm[@elem{Subject Reduction implies Type Preservation} #:tag "thm:type-pres-type-pres"]{
 If (@render-term[ANFL (ANFL-types Γ e_1 τ)] and @render-term[ANFL (anf->*j e_1 e_2)]
 implies @render-term[ANFL (ANFL-types Γ e_2 τ)]) then@exact{\\}
-if (@render-term[ANFL (λiL-types S.Γ S.e S.τ)] and @render-term[ANFL (anf-compile S.e A.e)] then
+(@render-term[ANFL (λiL-types S.Γ S.e S.τ)] and @render-term[ANFL (anf-compile S.e A.e)] implies
 ∃@render-term[ANFL A.Γ],@render-term[ANFL A.τ].
 @render-term[ANFL (λaL-types A.Γ A.e A.τ)]).
 }
