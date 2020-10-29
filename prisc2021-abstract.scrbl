@@ -278,8 +278,8 @@ if for all multi-language contexts @render-term[ANFL C], @render-term[ANFL
 We can define secure compilation of both the AOT and JIT models as full
 abstraction: contextual equivalence is preserved and reflected through
 multi-language reduction.
-It's unclear whether the reduction system would simplify this proof compared to
-standard logical relations techniques.
+Interestingly, full abstraction within the multi-language seems to be a trivial
+consequence of this definition and confluence.
 
 @;{
 Theorem (Contextual Equivalence implies Full Abstraction): If (C[e1] \approx C[e2]) then (Suppose and e1 \Rightarrow e1' and e2 \Rightarrow e2'. C[e1] \approx C[e2] and e1 \Rightarrow e1' and e2 \Rightarrow e2' if and only iff C[e1'] \approx C[e2']) (where \approx is contextual equivalence, and \Rightarrow is single-step multi-language reduction).
