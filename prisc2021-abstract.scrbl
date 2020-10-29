@@ -281,4 +281,20 @@ multi-language reduction.
 It's unclear whether the reduction system would simplify this proof compared to
 standard logical relations techniques.
 
+@;{
+Theorem (Contextual Equivalence implies Full Abstraction): If (C[e1] \approx C[e2]) then (Suppose and e1 \Rightarrow e1' and e2 \Rightarrow e2'. C[e1] \approx C[e2] and e1 \Rightarrow e1' and e2 \Rightarrow e2' if and only iff C[e1'] \approx C[e2']) (where \approx is contextual equivalence, and \Rightarrow is single-step multi-language reduction).
+
+This theorem is a bit silly. Under the first premise, the first premise of full abstraction is completely unnecessary, so this statement devolves into the statement for full abstraction, I think. We can immediately simplify:
+
+It suffices to prove just full abstraction: (Suppose and e1 \Rightarrow e1' and e2 \Rightarrow e2'. Then C[e1] \approx C[e2]  if and only iff C[e1'] \approx C[e2']) (where \approx is contextual equivalence, and \Rightarrow is single-step multi-language reduction).
+
+Now, we can easily prove the if case. Assume C[e1] \approx C[e2] and e1 \Rightarrow e1' and e2 \Rightarrow e2'. We must show C[e1'] \approx C[e2']. Observe that reduction in the multi-language is the same relation used by contextual equivalence (I think this is what you were trying to observe). Since C[e1] \approx C[e2], we know that C[e1] \Rightarrow* v and C[e2] \Rightarrow* v, or both diverge. In the former case, by confluence, C[e1] \Rightarrow e1' \Rightarrow* v and C[e2] \Rightarrow e2' \Rightarrow* v, so clearly C[e1] \approx C[e2']. Similarly in the latter case.
+
+We must now show the only-if case: Assuming C[e1'] \approx C[e2'] and e1 \Rightarrow e1' and e2 \Rightarrow e2', we must show C[e1] \approx C[e2]. The proof is similar to the previous case.
+
+Unfortunately, even this isn't quite full abstraction. Really, we want the statement to be purely in terms of source and target contexts. Ideally, this theorem would imply that theorem.
+
+But that seems unlikely; this theorem is extremely strange. We never once had to reason about the translation itself or make any assumptions. Full abstraction just holds by construction. This is worrying. Either we have a bug in the proof, or our definitions make full abstraction an uninteresting property.
+}
+
 @(generate-bibliography)
