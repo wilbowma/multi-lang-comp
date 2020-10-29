@@ -18,32 +18,29 @@
 #:email (email "wjb@williamjbowman.com")
 ]{William J. Bowman}
 
-@;@abstract{
-@;We design a compiler from a Scheme-like language to an x86-64-like assembly
-@;language.
-@;The compiler performs the A-normal-form translation, closure conversion, heap
-@;allocation and representation specification, hoisting, and code generation.
-@;The novelty in the design is that the compiler is not a translation between
-@;languages, but a reduction relation in a multi-language semantics.
-@;
-@;Formalizing the compiler as a reduction system in a multi-language semantics
-@;provides interesting semantic insights, presentation benefits, and
-@;verification benefit.
-@;Normalization of the cross-language redexes performs ahead-of-time (AOT)
-@;compilation.
-@;Evaluation in the multi-language models just-in-time (JIT) compilation.
-@;Confluence of multi-language reduction implies compiler correctness.
-@;Subject reduction of the multi-language reduction implies type-preservation of
-@;the compiler.
-@;The reduction systems compose easily, enabling simple vertical composition of
-@;separate passes.
-@;Horizontal composition (linking) is enabled easily by embedding in the
-@;multi-language.
-@;The multi-language semantics is already a starting point for certain approaches
-@;to secure compilation, so this could simplify approaches to secure compilation
-@;based on multi-language semantics.
-@;}
+@;{abstract
+Modeling interoperability between programs in different languages is a key
+problem when modeling compositional and secure compilation, which has been
+successfully addressed using multi-language semantics.
+Unfortunately, this approach duplicates definitions: the compiler appears once
+as a syntactic translation, and partially appears in the interoperability
+semantics.
 
+We introduce a novel approach to modeling a compiler entirely as a reduction
+system on open term in a multi-language semantics, rather than as a syntactic
+translation.
+This simultaneously defines the compiler and the interoperability semantics,
+reducing duplication.
+It also provides interesting semantic insights.
+Normalization of the cross-language redexes performs ahead-of-time (AOT)
+compilation.
+Evaluation in the multi-language models just-in-time (JIT) compilation.
+Confluence of multi-language reduction implies compiler correctness.
+Subject reduction of the multi-language reduction implies type-preservation of
+the compiler.
+This model provides a strong attacker model through contextual equivalence,
+retaining its usefulness for modeling secure compilation as full abstraction.
+}
 
 @section{Extended Abstract}
 Modeling interoperability between programs in different languages is a key
