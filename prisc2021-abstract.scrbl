@@ -46,7 +46,7 @@ retaining its usefulness for modeling secure compilation as full abstraction.
 Modeling interoperability between programs in different languages is a key
 problem when modeling compositional and secure compilation.
 Multi-language semantics provide a syntactic method for modeling language
-interopability@~cite{matthews2007}, which has proven useful in compiler
+interopability@~cite{matthews2007}, and has proven useful in compiler
 correctness and secure compilation@~cite["ahmed2011" "perconti2014"
 "ahmed2015:snapl" "new2016" "patterson2017:linkingtypes"].
 
