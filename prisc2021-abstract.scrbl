@@ -129,7 +129,9 @@ syntax.
 @exact{\vspace{-1ex}}
   (parameterize ([extend-language-show-union #t]
                  [extend-language-show-extended-order #t])
-    (render-language ANFL #:nts '(A.e A.n A.v S.e e)))
+    (hc-append 40
+      (render-language ANFL #:nts '(A.e A.n A.v))
+      (render-language ANFL #:nts '(S.e e))))
 @exact{\vspace{-2ex}}
 ]
 
@@ -141,6 +143,7 @@ We extend each meta-variable with boundary terms @render-term[ANFL (SA A.e)]
 
 @(require (only-in redex/pict render-reduction-relation-rules))
 @figure["fig:a-red" @elem{The A-reductions (excerpts)}
+@exact{\vspace{-1ex}}
   (parameterize ([render-reduction-relation-rules '("A-normal" "A-merge-l" "A-merge-b" "A-join" "A-lift")])
     (render-reduction-relation anf-> #:style 'compact-vertical))
 @exact{\vspace{-1ex}}
@@ -169,7 +172,9 @@ The side-conditions syntactically encode termination conditions, preventing
 A-reductions in certain empty or trivial evaluation contexts.
 
 @figure["fig:anf-boundary-red" @elem{@|anf-multi-lang| Boundary Reductions}
+@exact{\vspace{-1ex}}
   (render-reduction-relation st-> #:style 'horizontal)
+@exact{\vspace{-2ex}}
 ]
 
 We supplement the multi-language A-reductions with the standard boundary
@@ -178,11 +183,13 @@ These apply under any multi-language context @render-term[ANFL C].
 
 
 @figure["fig:anf-trans-red" @elem{@|anf-multi-lang| Translation Reduction System}
+@exact{\vspace{-2ex}}
   (hc-append 60
    (parameterize ([extend-language-show-union #t]
                   [extend-language-show-extended-order #t])
      (render-language ANFL #:nts '(T)))
    (with-paper-rewriters (render-judgment-form-rows anf->+j '(2))))
+   @exact{\vspace{-1ex}}
 ]
 
 In @Figure-ref{fig:anf-trans-red} we define the translation reduction system.
@@ -202,7 +209,9 @@ normalization with respect to translation reductions.
 @render-judgment-form[anf-compile]
 
 @figure["fig:anf-multi-red" @elem{@|anf-multi-lang| Multi-language Reduction}]{
+@exact{\vspace{-1ex}}
   @(with-paper-rewriters (render-judgment-form-rows anf-eval->+'(2 2 1)))
+  @exact{\vspace{-1ex}}
 }
 
 Finally, we define the multi-language semantics in
@@ -278,17 +287,35 @@ if for all multi-language contexts @render-term[ANFL C], @render-term[ANFL
 We can define secure compilation of both the AOT and JIT models as full
 abstraction: contextual equivalence is preserved and reflected through
 multi-language reduction.
-Interestingly, full abstraction within the multi-language seems to be a trivial
-consequence of this definition and confluence.
+
+@mthm["Full Abstraction (multi-language)"]{
+Suppose @render-term[ANFL (anf-eval->+ e_1 e_2p)] and @render-term[ANFL (anf-eval->+ e_2 e_2p)].
+@render-term[ANFL e_1]@exact{$\approx$}@render-term[ANFL e_2] iff
+@render-term[ANFL e_1p]@exact{$\approx$}@render-term[ANFL e_2p]
+}
+
+Interestingly, full abstraction within the multi-language is a simple
+consequence of confluence, since both compilation and contextual equivalence are
+defined by multi-language reduction.
+This seems too good to be true.
 
 @;{
-Theorem (Contextual Equivalence implies Full Abstraction): If (C[e1] \approx C[e2]) then (Suppose and e1 \Rightarrow e1' and e2 \Rightarrow e2'. C[e1] \approx C[e2] and e1 \Rightarrow e1' and e2 \Rightarrow e2' if and only iff C[e1'] \approx C[e2']) (where \approx is contextual equivalence, and \Rightarrow is single-step multi-language reduction).
+Theorem (Contextual Equivalence implies Full Abstraction): If (e1 \approx e2) then (Suppose and e1 \Rightarrow e1' and e2 \Rightarrow e2'. e1 \approx e2 and e1 \Rightarrow e1' and e2 \Rightarrow e2' if and only iff e1' \approx e2') (where \approx is contextual equivalence, and \Rightarrow is single-step multi-language reduction).
 
 This theorem is a bit silly. Under the first premise, the first premise of full abstraction is completely unnecessary, so this statement devolves into the statement for full abstraction, I think. We can immediately simplify:
 
-It suffices to prove just full abstraction: (Suppose and e1 \Rightarrow e1' and e2 \Rightarrow e2'. Then C[e1] \approx C[e2]  if and only iff C[e1'] \approx C[e2']) (where \approx is contextual equivalence, and \Rightarrow is single-step multi-language reduction).
+It suffices to prove just full abstraction: (Suppose and e1 \Rightarrow e1' and e2 \Rightarrow e2'. Then e1 \approx e2  if and only iff e1' \approx e2') (where \approx is contextual equivalence, and \Rightarrow is single-step multi-language reduction).
 
-Now, we can easily prove the if case. Assume C[e1] \approx C[e2] and e1 \Rightarrow e1' and e2 \Rightarrow e2'. We must show C[e1'] \approx C[e2']. Observe that reduction in the multi-language is the same relation used by contextual equivalence (I think this is what you were trying to observe). Since C[e1] \approx C[e2], we know that C[e1] \Rightarrow* v and C[e2] \Rightarrow* v, or both diverge. In the former case, by confluence, C[e1] \Rightarrow e1' \Rightarrow* v and C[e2] \Rightarrow e2' \Rightarrow* v, so clearly C[e1] \approx C[e2']. Similarly in the latter case.
+Now, we can easily prove the if case. Assume e1 \approx e2 and e1 \Rightarrow
+e1' and e2 \Rightarrow e2'. We must show e1' \approx e2'.
+Assume an arbitrary context C, we must show C[e1'] and C[e2'] co-terminate.
+Instantiate our hypothesis e1 \approx e2 with C; we learn that C[e1] and C[e2] co-terminate.
+Observe that reduction in the multi-language is the same relation used by
+contextual equivalence (I think this is what you were trying to observe). Since
+e1 \approx e2, we know that C[e1] \Rightarrow* v and C[e2] \Rightarrow* v, or
+both diverge. In the former case, by confluence, C[e1] \Rightarrow e1'
+\Rightarrow* v and C[e2] \Rightarrow e2' \Rightarrow* v, so clearly C[e1]
+\approx C[e2']. Similarly in the latter case.
 
 We must now show the only-if case: Assuming C[e1'] \approx C[e2'] and e1 \Rightarrow e1' and e2 \Rightarrow e2', we must show C[e1] \approx C[e2]. The proof is similar to the previous case.
 
