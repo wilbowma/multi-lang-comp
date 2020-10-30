@@ -48,13 +48,13 @@ problem when modeling compositional and secure compilation.
 Multi-language semantics provide a syntactic method for modeling the
 semantics of language interopability@~cite{matthews2007}, which has proven
 useful addressing this problem@~cite["ahmed2011" "perconti2014"
-"ahmed2015:snapl" "new2016a" "patterson2017:linkingtypes"].
+"ahmed2015:snapl" "new2016" "patterson2017:linkingtypes"].
 
 Unfortunately, existing models of compilation using multi-language semantics
 duplicate effort.
 The compiler is defined twice: on open terms as a syntactic
 translation, and on closed terms as a multi-language boundary
-reduction@~cite["ahmed2011" "new2016a"].
+reduction@~cite["ahmed2011" "new2016"].
 One must then prove that both definitions coincide.
 
 We introduce a novel approach to modeling a compiler entirely as a reduction
