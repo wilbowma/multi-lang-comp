@@ -203,7 +203,7 @@ any expression in the hole.
 In one step, the translation reduction system can perform either one A-reduction
 or one boundary cancellation.
 
-From the translation reduction, we derive ahead-of-time (AOT) compilation as
+From the translation reduction, we derive AOT compilation as
 normalization with respect to translation reductions.
 @mdef["ANF Compilation by Normalization"]
 @render-judgment-form[anf-compile]
@@ -230,7 +230,7 @@ the heap, which significantly complicates the semantics.
 
 The multi-language reduction allows reducing in the source, modeling
 interpretation, or translating then reducing in the target, modeling
-just-in-time (JIT) compilation before continuing execution.
+JIT compilation before continuing execution.
 This does not model speculative optimization; equipping the source with
 assumption instructions as done by @citet{flueckiger2018:jit} might support
 modeling this.
