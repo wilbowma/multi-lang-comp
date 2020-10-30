@@ -398,7 +398,12 @@
 
 (define (with-paper-rewriters/proc thunk)
   (with-compound-rewriters
-    (['≡
+    (['prime
+      (λ (lws)
+        (list ""
+              (list-ref lws 2)
+              "′"))]
+     ['≡
       (curry binop "≡")]
      ['not-equal?
       (λ (lws)

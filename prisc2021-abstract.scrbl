@@ -280,11 +280,11 @@ contextual equivalence is preserved and reflected through multi-language
 reduction.
 
 @mthm["Full Abstraction (multi-language)"]{
-Suppose @render-term[ANFL (anf-eval->+ e_1 e_1p)] and @render-term[ANFL
-(anf-eval->+ e_2 e_2p)]. Then
+Suppose @render-term[ANFL (anf-eval->+ e_1 (prime e_1))] and @render-term[ANFL
+(anf-eval->+ e_2 (prime e_2))] . Then
 @render-term[ANFL e_1] @exact{$\mathrel{\approx}$} @render-term[ANFL e_2] if and
 only if
-@render-term[ANFL e_1p] @exact{$\mathrel{\approx}$} @render-term[ANFL e_2p]
+@render-term[ANFL (prime e_1)] @exact{$\mathrel{\approx}$} @render-term[ANFL (prime e_2)]
 }
 
 Full abstraction within the multi-language is a simple consequence of
