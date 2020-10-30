@@ -128,13 +128,11 @@ The reduction relation, @render-term[ANFL (λa->j (H A.e_1) (H A.e_2))],
 does not require a control stack, which is in the syntax.
 
 @figure["fig:anf-multi-syn" @elem{@|anf-multi-lang| Syntax (excerpts)}
-@exact{\vspace{-1ex}}
   (parameterize ([extend-language-show-union #t]
                  [extend-language-show-extended-order #t])
     (hc-append 40
       (render-language ANFL #:nts '(A.e A.n A.v))
       (render-language ANFL #:nts '(S.e e))))
-@exact{\vspace{-2ex}}
 ]
 
 To develop a multi-language semantics, we embed syntactic terms from each
@@ -145,10 +143,8 @@ We extend each meta-variable with boundary terms @render-term[ANFL (SA A.e)]
 
 @(require (only-in redex/pict render-reduction-relation-rules))
 @figure["fig:a-red" @elem{The A-reductions (excerpts)}
-@exact{\vspace{-1ex}}
   (parameterize ([render-reduction-relation-rules '("A-normal" "A-merge-l" "A-merge-b" "A-join" "A-lift")])
     (render-reduction-relation anf-> #:style 'compact-vertical))
-@exact{\vspace{-1ex}}
 ]
 
 The translation to ANF can be viewed as a reduction system in the
@@ -173,9 +169,7 @@ The side-conditions syntactically encode termination conditions, preventing
 A-reductions of target redexes and in empty evaluation contexts.
 
 @figure["fig:anf-boundary-red" @elem{@|anf-multi-lang| Boundary Reductions}
-@exact{\vspace{-1ex}}
   (render-reduction-relation st-> #:style 'horizontal)
-@exact{\vspace{-2ex}}
 ]
 
 We supplement the multi-language A-reductions with the standard boundary
@@ -183,13 +177,11 @@ cancellation reductions, given in @Figure-ref{fig:anf-boundary-red}.
 These apply under any multi-language context @render-term[ANFL C].
 
 @figure["fig:anf-trans-red" @elem{@|anf-multi-lang| Translation Reductions}
-@exact{\vspace{-2ex}}
   (hc-append 60
    (parameterize ([extend-language-show-union #t]
                   [extend-language-show-extended-order #t])
      (render-language ANFL #:nts '(T)))
    (with-paper-rewriters (render-judgment-form-rows anf->+j '(2))))
-   @exact{\vspace{-1ex}}
 ]
 
 In @Figure-ref{fig:anf-trans-red} we define the translation reductions.
@@ -209,9 +201,7 @@ normalization with respect to translation reductions.
 @render-judgment-form[anf-compile]
 
 @figure["fig:anf-multi-red" @elem{@|anf-multi-lang| Multi-language Reduction}]{
-@exact{\vspace{-1ex}}
   @(with-paper-rewriters (render-judgment-form-rows anf-eval->+'(2 2 1)))
-  @exact{\vspace{-1ex}}
 }
 
 Finally, we define the multi-language semantics in

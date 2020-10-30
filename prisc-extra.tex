@@ -1,0 +1,11 @@
+\usepackage{microtype}
+\usepackage{doi}
+\usepackage{letltxmacro}
+\renewcommand{\Sdoi}[1]{\doi{#1}}
+
+\LetLtxMacro{\oldfigure}{\Figure}
+\LetLtxMacro{\oldendfigure}{\endFigure}
+
+\renewenvironment{Figure}
+{\oldfigure}
+{\vspace{-2ex}\oldendfigure}
