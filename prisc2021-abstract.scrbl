@@ -1,4 +1,4 @@
-#lang scribble/acmart @sigplan @nonacm @screen
+#lang scribble/acmart @sigplan @nonacm @screen @review
 
 @title{Compilation as Multi-Language Semantics}
 @(require
@@ -72,7 +72,8 @@ We model just-in-time (JIT) compilation as nondeterministic evaluation in the
 multi-language models: a term can either step in the source, or translate then
 step in the target.
 We prove that confluence of multi-language reduction implies compiler
-correctness, and subject reduction implies type-preservation of the compiler.
+correctness and (unbelievably) full abstraction; and that subject reduction
+implies type-preservation of the compiler.
 
 @;The model also retains properties valued for compiler construction and validation.
 @;Reduction systems compose easily, ensuring vertical composition of
