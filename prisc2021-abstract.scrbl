@@ -50,29 +50,29 @@ semantics of language interopability@~cite{matthews2007}, which has proven
 useful addressing this problem@~cite["ahmed2011" "perconti2014"
 "ahmed2015:snapl" "new2016a" "patterson2017:linkingtypes"].
 
-Unfortauntely, existing models of compilation using multi-language semantics
+Unfortunately, existing models of compilation using multi-language semantics
 duplicate effort.
 The compiler is defined twice: on open terms as a syntactic
 translation, and on closed terms as a multi-language boundary
 reduction@~cite["ahmed2011" "new2016a"].
-One must then prove the two definitions correspond.
+One must then prove that both definitions coincide.
 
 We introduce a novel approach to modeling a compiler entirely as a reduction
-system on open term in a multi-language semantics, rather than as a syntactic
+system on open terms in a multi-language semantics, rather than as a syntactic
 translation.
 This simultaneously defines the compiler and the interoperability semantics,
 reducing duplication.
-It also has interesting semantic concequences: different reduction
+It also has interesting semantic consequences: different reduction
 strategies model different compilation strategies, and standard theorems about
 reduction imply standard compiler correctness theorems.
-For example, normalization of the cross-language redexes models ahead-of-time
-(AOT) compilation; the normal form with respect to these redexes is a target
-language term.
-Nondeterministic evaluation in the multi-language models just-in-time (JIT)
-compilation: a term can either step in the source, or translate then step
-in the target.
-Confluence of multi-language reduction implies compiler correctness, and subject
-reduction implies type-preservation of the compiler.
+For example, we get a model of ahead-of-time (AOT) compilation by normalizing
+cross-language redexes; the normal form with respect to these redexes is a
+target language term.
+We model just-in-time (JIT) compilation as nondeterministic evaluation in the
+multi-language models: a term can either step in the source, or translate then
+step in the target.
+We prove that confluence of multi-language reduction implies compiler
+correctness, and subject reduction implies type-preservation of the compiler.
 
 @;The model also retains properties valued for compiler construction and validation.
 @;Reduction systems compose easily, ensuring vertical composition of
@@ -92,13 +92,13 @@ reduction implies type-preservation of the compiler.
 @;  (render-language λiL #:nts '(e x tag-pred arith-op))
 @;]
 
-Our approach generalalizes from high-level to low-level transformations of a
-wide array of lanugage features.
-We have developed a 5-pass model compiler from a Scheme-like language to an
-x86-64-like language.
+Our approach generalizes from high-level to low-level transformations of a
+wide array of language features.
+To demonstrate this, we have developed a 5-pass model compiler from a
+Scheme-like language to an x86-64-like language.
 Below, we model one interesting compiler pass: reduction to A-normal form (ANF).
-This pass is interesting, since the A-reductions are non-local: they reorder a
-term with respect to its context.
+This pass is a good test, as it is difficult to model because the A-reductions
+reorder a term with respect to its context.
 
 The source is a standard dynamically typed functional imperative language,
 modeled on Scheme.
@@ -122,8 +122,7 @@ A-normal form: all computations @render-term[ANFL A.n] require values
 @render-term[ANFL A.v] as operands, expressions @render-term[ANFL A.e]
 cannot be nested but instead sub-expressions must be manually bound to names.
 The reduction relation, written @render-term[ANFL (λa->j (H A.e_1) (H A.e_2))],
-takes advantage no longer requires a computation stack, which is encoded in the
-syntax.
+no longer requires a computation stack, which is encoded in the syntax.
 
 @figure["fig:anf-multi-syn" @elem{@|anf-multi-lang| Syntax (excerpts)}
 @exact{\vspace{-1ex}}
@@ -153,9 +152,9 @@ multi-language@~cite{flanagan1993}.
 @;In fact, the original presentation of ANF was as a reduction system, and this is
 @;where A-normal form derives its name---the normal form with respect to the
 @;A-reductions@~cite{flanagan1993}.
-We define the A-reduction in @Figure-ref{fig:a-red}.
-These are essentially standard, but we modify them to make boundary transitions
-explicit.
+We define the A-reductions in @Figure-ref{fig:a-red}.
+These rules are essentially standard, but we modify them to make boundary
+transitions explicit.
 The A-reductions have the form @render-term[ANFL (anf->j S.e S.e)], reducing
 source expressions in the multi-language.
 A-normal form corresponds to a @render-term[ANFL SA] boundary around a purely
@@ -163,7 +162,7 @@ ANF expression, with no boundary terms as subexpressions.
 Each A-reduction rewrites a source expression in a source evaluation context,
 rewriting the term to make evaluation order explicit.
 We deviate from the standard presentation by making explicit boundary
-transition.
+transitions.
 For example, the A-lift rule lifts a trivial computation, let-binding it and
 providing the let-bound name (a value) in evaluation position, explicitly
 sequencing the computation @render-term[ANFL A.n] with the evaluation context
@@ -203,7 +202,7 @@ any expression in the hole.
 In one step, the translation reduction system can perform either one A-reduction
 or one boundary cancellation.
 
-From the translation reduction, we can derive ahead-of-time (AOT) compilation as
+From the translation reduction, we derive ahead-of-time (AOT) compilation as
 normalization with respect to translation reductions.
 @mdef["ANF Compilation by Normalization"]
 @render-judgment-form[anf-compile]
@@ -228,17 +227,16 @@ assumption that the language memory models are identical.
 We could lift this restriction by extending translation reduction to apply in
 the heap, which significantly complicates the semantics.
 
-We can intuitively understand how the multi-language semantics models
-just-in-time (JIT) compilation.
-The definition allows running an interpreter (reducing in the source), or
-JIT compilation (translation then reducing in the target).
+The multi-language reduction allows reducing in the source, modeling
+interpretation, or translating then reducing in the target, modeling
+just-in-time (JIT) compilation before continuing execution.
 This does not model speculative optimization; equipping the source with
 assumption instructions as done by @citet{flueckiger2018:jit} might support
 modeling this.
 
 We derive compiler correctness from confluence.
 
-@mthm[@elem{Confluence} #:tag "thm:anf:confluence"]{
+@mconj[@elem{Confluence} #:tag "thm:anf:confluence"]{
 If @render-term[ANFL (anf-eval->* (H e) (H_1 e_1))] and @exact{\\}
 @render-term[ANFL (anf-eval->* (H e) (H_2 e_2))] then
 @render-term[ANFL (anf-eval->* (H_1 e_1) (H_3 e_3))] and
@@ -247,7 +245,7 @@ If @render-term[ANFL (anf-eval->* (H e) (H_1 e_1))] and @exact{\\}
 
 Note the multi-language semantics can reduce open terms, so confluence implies
 correctness of both the AOT and the JIT compiler.
-As an example, whole-program correctness is a trivial corollary.
+As an example, whole-program correctness is a trivial corollary of confluence.
 
 @mcor[@elem{Whole-Program Correctness} #:tag "thm:anf:correct"]{
 @exact{\mbox{}\\}
@@ -272,9 +270,9 @@ implies @render-term[ANFL (ANFL-types Γ e_2 τ)]) then@exact{\\}
 @render-term[ANFL (λaL-types A.Γ A.e A.τ)]).
 }
 
-Multi-language provide a strong attacker model through contextual equivalence.
-A context @render-term[ANFL C] models an attacker that can provide either
-source or target code or data as input and observe the result.
+Multi-language semantics provide a strong attacker model through contextual
+equivalence. A context @render-term[ANFL C] models an attacker that can provide
+either source or target code or data as input and observe the result.
 
 @mdef["Contextual Equivalence"]{
 Terms @render-term[ANFL e_1] and @render-term[ANFL e_1] are
@@ -284,9 +282,9 @@ if for all multi-language contexts @render-term[ANFL C], @render-term[ANFL
 (in-hole C e_1)] and @render-term[ANFL (in-hole C e_2)] co-terminate in
 @(ANFL->-arrow).}
 
-We can define secure compilation of both the AOT and JIT models as full
-abstraction: contextual equivalence is preserved and reflected through
-multi-language reduction.
+We define secure compilation of both the AOT and JIT models as full abstraction:
+contextual equivalence is preserved and reflected through multi-language
+reduction.
 
 @mthm["Full Abstraction (multi-language)"]{
 Suppose @render-term[ANFL (anf-eval->+ e_1 e_2p)] and @render-term[ANFL (anf-eval->+ e_2 e_2p)].
