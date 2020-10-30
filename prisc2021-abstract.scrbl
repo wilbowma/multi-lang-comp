@@ -169,7 +169,7 @@ providing the let-bound name (a value) in evaluation position, explicitly
 sequencing the computation @render-term[ANFL A.n] with the evaluation context
 @render-term[ANFL S.E].
 The side-conditions syntactically encode termination conditions, preventing
-A-reductions in certain empty or trivial evaluation contexts.
+A-reductions of redexes or in empty contexts.
 
 @figure["fig:anf-boundary-red" @elem{@|anf-multi-lang| Boundary Reductions}
 @exact{\vspace{-1ex}}
