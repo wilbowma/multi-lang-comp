@@ -26,9 +26,9 @@ Unfortunately, this approach duplicates definitions: the compiler appears once
 as a syntactic translation, and partially appears in the interoperability
 semantics.
 
-We introduce a novel approach to modeling a compiler entirely as a reduction
-system on open term in a multi-language semantics, rather than as a syntactic
-translation.
+We introduce a novel work-in-progress approach to modeling a compiler entirely
+as a reduction system on open term in a multi-language semantics, rather than as
+a syntactic translation.
 This simultaneously defines the compiler and the interoperability semantics,
 reducing duplication.
 It also provides interesting semantic insights.
@@ -57,10 +57,9 @@ terms, and a run-time translation of closed terms at multi-language
 boundaries@~cite["ahmed2011" "new2016"].
 One must then prove that both definitions coincide.
 
-We introduce a novel approach to uniformly model both variants as a single
-reduction system on open terms in a multi-language semantics.
-This simultaneously defines the compiler and the interoperability semantics,
-reducing duplication.
+We introduce a novel work-in-progress approach to uniformly model both variants
+as a single reduction system on open terms in a multi-language semantics.
+This simultaneously defines the compiler and the interoperability semantics.
 It also has interesting semantic consequences: different reduction
 strategies model different compilation strategies, and standard theorems about
 reduction imply standard compiler correctness theorems.
@@ -125,7 +124,7 @@ A-normal form: all computations @render-term[ANFL A.n] require values
 cannot be nested and only explicitly compose and sequence intermediate
 computations @render-term[ANFL A.n].
 The reduction relation, @render-term[ANFL (λa->j (H A.e_1) (H A.e_2))],
-does not require a control stack, which is in the syntax.
+does not require a control stack.
 
 @figure["fig:anf-multi-syn" @elem{@|anf-multi-lang| Syntax (excerpts)}
   (parameterize ([extend-language-show-union #t]
@@ -157,8 +156,6 @@ These rules are essentially standard@~cite{flanagan1993}, but we modify them to
 make boundary transitions explicit.
 The A-reductions have the form @render-term[ANFL (anf->j S.e S.e)], reducing
 source expressions in the multi-language.
-The normal form for these reductions is an @render-term[ANFL SA] boundary around
-a ``pure'' target language expression, with no boundary subexpressions.
 Each A-reduction rewrites a source expression in a source evaluation context,
 transforming the control stack into a data stack.
 For example, the A-lift rule lifts a trivial computation, let-binding it and
@@ -185,7 +182,7 @@ These apply under any multi-language context @render-term[ANFL C].
 ]
 
 In @Figure-ref{fig:anf-trans-red} we define the translation reductions.
-These extends A-reductions to apply under any translation context
+These extend the A-reductions to apply under any translation context
 @render-term[ANFL T].
 The construction of the translation context for ANF is a little unusual, but
 the intuition is simple: a translation context identifies a pure source
