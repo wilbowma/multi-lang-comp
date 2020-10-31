@@ -261,27 +261,31 @@ If
 }
 
 Multi-language semantics provide a strong attacker model through contextual
-equivalence. A context @render-term[ANFL C] models an attacker that can provide
+equivalence.
+A context @render-term[ANFL C] models an attacker that can provide
 either source or target code or data as input and observe the result.
+Contextual equivalence is extended to relate reduction configurations, not
+just terms, to enable the definition to apply to the JIT model.
 
 @mdef["Contextual Equivalence"]{
-Terms @render-term[ANFL e_1] and @render-term[ANFL e_1] are
-contextually equivalent (@render-term[ANFL
-e_2] @exact{$\mathrel{\approx}$} @render-term[ANFL e_2])
+@render-term[ANFL (H_1 e_1)] @exact{$\mathrel{\approx}$} @render-term[ANFL (H_2 e_2)]
 if for all multi-language contexts @render-term[ANFL C], @render-term[ANFL
-(in-hole C e_1)] and @render-term[ANFL (in-hole C e_2)] co-terminate in
-@(ANFL->-arrow).}
+(H_1 (in-hole C e_1))] and @render-term[ANFL (H_2 (in-hole C e_2))] co-terminate
+in @(ANFL->-arrow).}
 
 We define secure compilation of both the AOT and JIT models as full abstraction:
 contextual equivalence is preserved and reflected through multi-language
 reduction.
 
 @mthm["Full Abstraction (multi-language)"]{
-Suppose @render-term[ANFL (anf-eval->+ e_1 (prime e_1))] and @render-term[ANFL
-(anf-eval->+ e_2 (prime e_2))] . Then
-@render-term[ANFL e_1] @exact{$\mathrel{\approx}$} @render-term[ANFL e_2] if and
-only if
-@render-term[ANFL (prime e_1)] @exact{$\mathrel{\approx}$} @render-term[ANFL (prime e_2)]
+Suppose
+@render-term[ANFL (anf-eval->+ (H_1 e_1) ((prime H_1) (prime e_1)))] and
+@render-term[ANFL (anf-eval->+ (H_2 e_2) ((prime H_2) (prime e_2)))].
+@exact{\\}Then
+@render-term[ANFL (H_1 e_1)] @exact{$\mathrel{\approx}$} @render-term[ANFL (H_2 e_2)]
+if and only if
+@render-term[ANFL ((prime H_1) (prime e_1))] @exact{$\mathrel{\approx}$}
+@render-term[ANFL ((prime H_2) (prime e_2))].
 }
 
 Full abstraction within the multi-language is a simple consequence of
