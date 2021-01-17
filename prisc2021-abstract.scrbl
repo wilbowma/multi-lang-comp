@@ -22,13 +22,14 @@
 Modeling interoperability between programs in different languages is a key
 problem when modeling compositional and secure compilation, which has been
 successfully addressed using multi-language semantics.
-Unfortunately, this approach duplicates definitions: the compiler appears once
-as a syntactic translation, and partially appears in the interoperability
-semantics.
+Unfortunately, existing models of compilation using multi-language semantics
+define two variants of each compiler pass are defined: a syntactic translation
+on open terms, and a run-time translation of closed terms at multi-language
+boundaries
 
-We introduce a novel work-in-progress approach to modeling a compiler entirely
-as a reduction system on open term in a multi-language semantics, rather than as
-a syntactic translation.
+We introduce a novel work-in-progress approach to uniformly model a compiler
+entirely as a reduction system on open term in a multi-language semantics,
+rather than as a syntactic translation.
 This simultaneously defines the compiler and the interoperability semantics,
 reducing duplication.
 It also provides interesting semantic insights.
@@ -70,7 +71,7 @@ We model just-in-time (JIT) compilation as nondeterministic evaluation in the
 multi-language: a term can either step in the source, or translate then step in
 the target.
 We prove that confluence of multi-language reduction implies compiler
-correctness and (unbelievably) full abstraction; and that subject reduction
+correctness and part of full abstraction; and that subject reduction
 implies type-preservation of the compiler.
 
 @;The model also retains properties valued for compiler construction and validation.
@@ -288,10 +289,11 @@ if and only if
 @render-term[ANFL ((prime H_2) (prime e_2))].
 }
 
-Full abstraction within the multi-language is a simple consequence of
-confluence, since both compilation and contextual equivalence are defined by
-multi-language reduction.
-This is surprising, as full abstraction proofs are normally complex.
+The normally easy part of full abstraction, within the multi-language, is now a
+direct consequence of confluence, since both compilation and contextual
+equivalence are defined by multi-language reduction.
+The hard part, showing any multi-language context (attacker) is emulated by a
+source context, remains.
 
 @;{
 Theorem (Contextual Equivalence implies Full Abstraction): If (e1 \approx e2) then (Suppose and e1 \Rightarrow e1' and e2 \Rightarrow e2'. e1 \approx e2 and e1 \Rightarrow e1' and e2 \Rightarrow e2' if and only iff e1' \approx e2') (where \approx is contextual equivalence, and \Rightarrow is single-step multi-language reduction).
