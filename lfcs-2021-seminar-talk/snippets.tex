@@ -1,0 +1,127 @@
+\documentclass{article}
+\usepackage{mathpartir}
+\usepackage{amsmath}
+
+\begin{document}
+
+$$
+\begin{array}{rcl}
+  e & ::= & x \mid (\lambda x.e) \mid (e\; e) \mid (\textrm{set!}\; x\; e) \mid (\textrm{let}\; ([x\; e]\; ...)\; e) \mid (\textrm{begin}\; e\; ...)\; \mid .... \\&&
+  \mid SA(M)
+\end{array}
+$$
+
+
+$$
+\begin{array}{rcl}
+V & ::= & x \mid (\lambda x.M) \mid \textrm{true} \mid \textrm{false} \mid .... \\ && AS(e) \\
+N & ::= & V \mid (V\; V) \mid (\textrm{set!}\; x\; V) \mid .... \\ && AS(e) \\
+M & ::= & N \mid (\textrm{let}\; ([x\; N]\; ...)\; M) \mid (\textrm{begin}\; N\; ...\; M) \mid (\textrm{if}\; V\; M\; M) \mid .... \\ && AS(e) \\
+\end{array}
+$$
+
+$$
+\begin{array}{rcl}
+  v & ::= & (\lambda x.e) \mid true \mid .... \\
+  E & ::= & [\cdot] \mid E\; e \mid v\; E \mid .... \\
+  H & ::= & \cdot \mid H,x \mapsto v
+\end{array}
+$$
+
+\fbox{$H;\; e \to H;\; e$}
+\begin{mathpar}
+\begin{array}{rcl}
+  (\lambda x.e)\; v & \to & e[x\; := v] \\
+  & \vdots
+
+\end{array}
+
+\inferrule
+{e \to e'}
+{E[e] \to E[e']}
+\end{mathpar}
+
+
+$$
+\begin{array}{rcl}
+  E & ::= & [\cdot] \mid (\textrm{let} ([x\; V]\; ... [x\; [\cdot]] [x\; N]\; ...)\; M) \\
+  H & ::= & \cdot \mid H,x \mapsto V
+\end{array}
+$$
+
+
+\fbox{$H;\; M \to H;\; M$}
+\begin{mathpar}
+\begin{array}{rclr}
+  (\lambda x.M)\; V & \to & M[x\; := V] \\
+  &\vdots& \\
+  (\textrm{let}\; ([x\; V]\; ...)\; M) & \to & M[x := V\; ...]
+\end{array}
+\end{mathpar}
+
+\fbox{$e \to^a e$}
+\begin{mathpar}
+  \begin{array}{rclr}
+    M & \to^a & SA(M) & \textrm{[A-normal]} \\[2pt]
+
+    E[(\textrm{let}\; ([x\; e]\; ...)\; e_2] & \to^a & 
+    SA(\textrm{let}\; ([x\; AS(e)]\; ...)\; AS(E[e_2])) & \textrm{[A-merge-let]} \\[2pt]
+
+    E[(\textrm{begin}\; e_1\; ...\; e_2] & \to^a & 
+    SA(\textrm{begin}\; AS(e_1)\; ...\; AS(E[e_2])) & \textrm{[A-merge-begin]} \\[2pt]
+
+    E[N] & \to^a & SA(\textrm{let}\; ([x\; N])\; AS(E[x])) & \textrm{[A-lift]} \\
+    && \text{where $E$ is not an ``$N$ accepting target context''} \\
+    && \text{and $N$ is not a $V$} \\
+    & \vdots &
+  \end{array}
+\end{mathpar}
+
+\begin{mathpar}
+  \begin{array}{rcl}
+    p & ::= & e \mid M \\
+    T & ::= & AS(C_M) \\
+    C_M & ::= & [\cdot] \mid
+     (\textrm{let}\; ([x\; N]\; ...) C_M) \mid ....
+  \end{array}
+\end{mathpar}
+
+\fbox{$M\; {}^s\!\!\to^a M$}
+\begin{mathpar}
+  \inferrule
+      {p \to^a p'}
+      {C[T[p]]\; {}^s\!\!\to^a C[T[p']]}
+
+  \inferrule
+      {~}
+      {C[SA(AS(e))] \;{}^s\!\!\to^a C[e]}
+
+  \inferrule
+      {~}
+      {C[AS(SA(M))] \;{}^s\!\!\to^a C[M]}
+\end{mathpar}
+
+\fbox{$H;\; p \to^p H;\; p$}
+\begin{mathpar}
+  \inferrule*[right=\text{Step-S1}]
+      {H\; e \to H';\; e'}
+      {H;\; e \to^p H';\; e'}
+
+  \inferrule*[right=\text{Step-S2}]
+      {H\; e \to H';\; e'}
+      {H;\; AS(e) \to^p H';\; AS(e')}
+
+  \inferrule*[right=\text{Step-T1}]
+      {H\; M \to H';\; M'}
+      {H;\; M \to^p H';\; M'}
+
+  \inferrule*[right=\text{Step-T2}]
+      {H\; M \to H';\; M'}
+      {H;\; SA(M) \to^p H';\; SA(M')}
+
+  \inferrule*[right=\text{Step-Across}]
+      {M \; {}^s\!\!\to^a M'}
+      {H;\; M \to^p H;\; M'}
+\end{mathpar}
+
+\end{document}
