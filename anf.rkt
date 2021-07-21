@@ -117,12 +117,12 @@
 (define st->
   (reduction-relation
    ANFL
-   #:domain A.e
-   #:codomain A.e
+   ;#:domain A.e
+   ;#:codomain A.e
    #:arrow -->st
 
-   (-->st (in-hole C (AS (SA e))) (in-hole C e))
-   (-->st (in-hole C (SA (AS e))) (in-hole C e))))
+   (-->st (in-hole C (AS (SA e))) (in-hole C e) "Boundary-1")
+   (-->st (in-hole C (SA (AS e))) (in-hole C e) "Boundary-2")))
 
 (define anf->+
   (union-reduction-relations
