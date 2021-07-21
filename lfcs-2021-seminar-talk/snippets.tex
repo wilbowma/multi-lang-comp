@@ -64,10 +64,10 @@ $$
   \begin{array}{rclr}
     M & \to^a & SA(M) & \textrm{[A-normal]} \\[2pt]
 
-    E[(\textrm{let}\; ([x\; e]\; ...)\; e_2] & \to^a & 
+    E[(\textrm{let}\; ([x\; e]\; ...)\; e_2] & \to^a &
     SA(\textrm{let}\; ([x\; AS(e)]\; ...)\; AS(E[e_2])) & \textrm{[A-merge-let]} \\[2pt]
 
-    E[(\textrm{begin}\; e_1\; ...\; e_2] & \to^a & 
+    E[(\textrm{begin}\; e_1\; ...\; e_2)] & \to^a &
     SA(\textrm{begin}\; AS(e_1)\; ...\; AS(E[e_2])) & \textrm{[A-merge-begin]} \\[2pt]
 
     E[N] & \to^a & SA(\textrm{let}\; ([x\; N])\; AS(E[x])) & \textrm{[A-lift]} \\
@@ -123,5 +123,16 @@ $$
       {M \; {}^s\!\!\to^a M'}
       {H;\; M \to^p H;\; M'}
 \end{mathpar}
+
+
+\fbox{$e \Downarrow_{AOT} M$}
+\begin{mathpar}
+  \inferrule
+             {AS(e) \; {}^s\!\!\to^a\!\!*\; M
+               \\
+               M \; {}^s\!\!\not\to^a M'}
+      {e \Downarrow_{AOT} M}
+\end{mathpar}
+
 
 \end{document}
