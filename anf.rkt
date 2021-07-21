@@ -250,6 +250,14 @@
   [-----------------------------
    (anf-eval->* (H e) (H e))])
 
+(define-judgment-form ANFL
+  #:mode (aot-normalize I O)
+  #:contract (aot-normalize S.e A.e)
+
+  [(where (A.e) ,(apply-reduction-relation* anf->+ (term (AS S.e))))
+   ----------------------- "AOT"
+   (aot-normalize S.e A.e)])
+
 (define-metafunction ANFL
   compile-anf : S.e -> A.e
   [(compile-anf S.e)
