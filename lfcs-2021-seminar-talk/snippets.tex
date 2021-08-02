@@ -1,13 +1,39 @@
 \documentclass{article}
 \usepackage{mathpartir}
 \usepackage{amsmath}
+\usepackage{mttex/mttex}
+\usepackage{bm}
+
+\newcommand{\sfontnonterm}[1]{\sfont{\emph{#1}}}
+\newlanguage{\scolor}{\sfontnonterm}{\sfontsym}{s}
+{x,e,v,E}
+{}
+{}
+{}
+
+\newcommand{\sfune}[2]{(\sfontsym{\lambda}#1.#2)}
+\newcommand{\sappe}[2]{(#1\; #2)}
+\newcommand{\ssetbange}[2]{(\sfont{set!}\; #1\; #2)}
+\newcommand{\slete}[2]{(\sfont{let}\; (#1)\; #2)}
+\newcommand{\sbegine}[2]{(\sfont{begin}\; #1\; #2)}
+\newcommand{\SAe}[1]{\sfont{S}\tfont{A}(#1)}
+
+\newcommand{\tfontnonterm}[1]{\emph{\tcolor{$\bm{#1}$}}}
+\newlanguage{\tcolor}{\tfontnonterm}{\tfontsym}{t}
+{x,M,V,N,E}
+{}
+{}
+{}
+
+
+\newcommand{\tfune}[2]{\tfontsym{\lambda}#1. #2}
 
 \begin{document}
 
 $$
 \begin{array}{rcl}
-  e & ::= & x \mid (\lambda x.e) \mid (e\; e) \mid (\textrm{set!}\; x\; e) \mid (\textrm{let}\; ([x\; e]\; ...)\; e) \mid (\textrm{begin}\; e\; ...)\; \mid .... \\&&
-  \mid SA(M)
+  \se & ::= & \sx \mid \sfune{\sx}{\se} \mid \sappe{\se}{\se} \mid \ssetbange{\sx}{\se} \mid \slete{[\sx\; \se]\; \dots}{\se} \mid \sbegine{\se}{\dots} \mid .... \\&&
+  \mid \SAe{\tM}
 \end{array}
 $$
 
@@ -133,6 +159,74 @@ $$
                M \; {}^s\!\!\not\to^a M'}
       {e \Downarrow_{AOT} M}
 \end{mathpar}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{theorem}{Theorem}
+
+\begin{proposition}[Confluence]
+  ~\\
+  If $H; p \to^{p*}  H_1; p_1$  and
+  $H; p \to^{p*}  H_2; p_2$ then \\
+  $H_1; p_1  \to^{p*} H'; p'$ and
+  $H_2; p_2  \to^{p*} H'; p'$.
+\end{proposition}
+
+\begin{corollary}[Whole-Program Correctness]
+  ~\\
+  If $\cdot; e \to^{p*}  H_1; v$  and
+  $e \Downarrow_{AOT} M$ then \\
+  $\cdot; M  \to^{p*} H_2; v$
+\end{corollary}
+
+\begin{proposition}[Type Preservation]
+  ~\\
+  If $\Gamma \vdash e : A$ and $e \Downarrow_{AOT} M$ then $\Gamma' \vdash M : B$ (ish)
+\end{proposition}
+
+\begin{proposition}[Subject Reduction]
+~\\
+  If $\Gamma \vdash e : A$ and $H; e \to^{p} H'; e'$ then $\Gamma \vdash e' : A$
+\end{proposition}
+
+\begin{theorem}[Subject Reduction Implies Type Safety]
+~\\
+  If ($\Gamma \vdash e : A$ and $H; e \to^{p} H'; e'$ implies $\Gamma \vdash e' : A$) then\\
+  ($\Gamma \vdash e : A$ and $e \Downarrow_{AOT} M$ implies $\Gamma' \vdash M : B$)
+\end{theorem}
+
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+
+\begin{definition}[Contextual Equivalence]
+  ~\\
+  \begin{displaymath}
+    \begin{array}{rclcl}
+      H_1; p_1 & \approx_{SA} & H_2; p_2 &\defeq& \forall C. H_1; C[p_1] \Downarrow^p \iff H_2; C[p_2] \Downarrow^p\\
+      H_1; e_1 & \approx_{S} & H_2; e_2 &\defeq& \forall C_S. H_1; C_S[e_1] \Downarrow^s \iff H_2; C_S[e_2] \Downarrow^s\\
+      H_1; M_1 & \approx_{A} & H_2; M_2 &\defeq& \forall C_A. H_1; C_A[M_1] \Downarrow^a \iff H_2; C_A[M_2] \Downarrow^a
+      \end{array}
+  \end{displaymath}
+\end{definition}
+
+\begin{proposition}[Full Abstraction]
+  ~\\
+  Suppose $e_1 \Downarrow_{AOT} M_1$ and $e_2 \Downarrow_{AOT} M_2$.\\
+  $H_1; e_1 \approx_S H_2; e_2$ if and only if $H_1; M_1 \approx_A H_2; M_2$.
+\end{proposition}
+
+\begin{lemma}[Full Abstraction (hard part)]
+  ~\\
+  Suppose $e_1 \Downarrow_{AOT} M_1$ and $e_2 \Downarrow_{AOT} M_2$.\\
+  $H_1; e_1 \approx_S H_2; e_2$ if and only if $H_1; M_1 \approx_{SA} H_2; M_2$.
+\end{lemma}
+
+\begin{lemma}[Full Abstraction (easy part)]
+  ~\\
+  Suppose $e_1 \Downarrow_{AOT} M_1$ and $e_2 \Downarrow_{AOT} M_2$.\\
+  $H_1; e_1 \approx_{SA} H_2; e_2$ if and only if $H_1; M_1 \approx_{A} H_2; M_2$.
+\end{lemma}
+
 
 
 \end{document}
