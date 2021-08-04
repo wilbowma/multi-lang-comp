@@ -71,11 +71,13 @@
    (-->a
     (in-hole S.E (let ([A.x S.e] ...) S.e_2))
     (SA (let ([A.x (AS S.e)] ...) (AS (in-hole S.E S.e_2))))
+    (side-condition (not (equal? (term hole) (term S.E))))
     "A-merge-l")
 
    (-->a
     (in-hole S.E (begin S.e_r ... S.e))
     (SA (begin (AS S.e_r) ... (AS (in-hole S.E S.e))))
+    (side-condition (not (equal? (term hole) (term S.E))))
     "A-merge-b")
 
    (-->a
@@ -95,6 +97,7 @@
    (-->a
     (in-hole A.Cm (if A.v S.e_1 S.e_2))
     (SA (if A.v (AS S.e_1) (AS S.e_2)))
+    (side-condition (not (equal? (term hole) (term S.E))))
     "A-merge-if")
 
    (-->a (in-hole S.E A.n) (SA (let ([x A.n]) (AS (in-hole S.E x))))
