@@ -30,7 +30,9 @@
   [e ::= S.e A.e]
 
   #;[T ::= (in-hole C (AS A.Cm))]
-  [T ::= (in-hole C (AS hole))]
+  [T ::= (in-hole C (AS hole))
+     (in-hole C (lambda (x ...) (AS hole)))]
+
 
   [C ::= A.Cv]
 
