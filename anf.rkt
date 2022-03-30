@@ -99,7 +99,6 @@
    (-->a
     (in-hole A.Cm (if A.v S.e_1 S.e_2))
     (SA (if A.v (AS S.e_1) (AS S.e_2)))
-    (side-condition (not (equal? (term hole) (term S.E))))
     "A-merge-if")
 
    (-->a (in-hole S.E A.n) (SA (let ([x A.n]) (AS (in-hole S.E x))))
