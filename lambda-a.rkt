@@ -44,7 +44,7 @@
 
 (define-extended-language λaL-eval λaL
   [S ::= env] ; must be a dict of labels to values
-  [E ::= (let ([x v] ... [x hole] [x n] ...) e) (begin v ... hole e ...)]
+  [E ::= (let ([x v] ... [x hole] [x n] ...) e) (begin v ... hole n ... e)]
   [v ::= .... l]
   [fv ::= (λ (x ...) e)]
   [hv ::= v fv (pair v v) (box v)])
