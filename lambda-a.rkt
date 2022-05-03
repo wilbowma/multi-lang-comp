@@ -60,7 +60,7 @@
         (S (subst-all e (x ...) (v ...))))
 
    (-->λa (S_1 (letrec ([x fv] ...) e))
-        (S_2 (in-hole E (subst-all e (x ...) (l ...))))
+        (S_2 (subst-all e (x ...) (l ...)))
 
         (where (l ...) (fresh-labels x ...))
         (where (v_1 ...) ((subst-all fv (x ...) (l ...)) ...))
@@ -199,7 +199,7 @@
         (side-condition (term (non-fixnum? v_1))))
    (-->λa (S (in-hole E (arith-op v_1 v_2)))
         (S (error))
-        (side-condition (term (non-fixnum? v_1))))
+        (side-condition (term (non-fixnum? v_2))))
    (-->λa (S (in-hole E (fixnum? fixnum_1)))
         (S (in-hole E #t)))
    (-->λa (S (in-hole E (fixnum? v)))
