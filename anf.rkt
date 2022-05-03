@@ -29,12 +29,15 @@
   [primop ::= A.primop S.primop]
   [e ::= S.e A.e]
 
-  #;[T ::= (in-hole C (AS A.Cm))]
-  [T ::= (in-hole C (AS hole))
-     (in-hole C (lambda (x ...) (AS hole)))]
-
+  #;[T ::= (in-hole C (AS A.Cm))] ;(in-hole C (lambda (x ...) (AS hole)))
+  [T ::= (in-hole C (AS hole))]
 
   [C ::= A.Cv]
+
+  [S.Cs ::= ....]
+  [Ts ::= (in-hole S.Cs (SA hole))]
+
+  #;[Cx ::= S.Cs]
 
   [S ::= S.env]
 
@@ -241,8 +244,16 @@
 
   [(anf->+j A.e_1 A.e_2)
    ;; TODO: Need to be able to translate the heap.
-   ----------------------------- "JIT"
-   (anf-eval->+ (H_1 A.e_1) (H_1 A.e_2))])
+   ----------------------------- "JIT-A"
+   (anf-eval->+ (H_1 A.e_1) (H_1 A.e_2))]
+
+  [(anf->+j A.e_1 A.e_2)
+   ----------------------------- "JIT-S"
+   (anf-eval->+ (H_1 (in-hole Ts A.e_1)) (H_1 (in-hole Ts A.e_2)))]
+
+  [(where () ,(maybe-apply-reduction-relation anf->+j (term A.e)))
+   ----------------- "S-Normal"
+   (anf-eval->+ (H_1 (in-hole S.Cs (SA A.e))) (H_1 (in-hole S.Cs A.e)))])
 
 (define-judgment-form ANFL
   #:mode (anf-eval->* I O)
