@@ -58,13 +58,20 @@
   [E ::= hole (let ([x v] ... [x E] [x e] ...) e) (begin v ... E e ...)
      (if E e e) (primop v ... E e ...) (v ... E e ...)]
 
-  [Cs ::= hole (e ... Cs e ...) (primop e ... Cs e ...)
-      (if Cs e e) (if e Cs e) (if e e Cs)
+  [Cs ::= hole
+      (e ... Cs e ...)
+      (primop e ... Cs e ...)
+      (if Cs e e)
+      (if e Cs e)
+      (if e e Cs)
       (let ([x e] ... [x Cs] [x e] ...) e)
       (let ([x e] ...) Cs)
       (letrec ([x (λ (x ...) e)] ... [x (λ (x ...) Cs)] [x (λ (x ...) e)] ...) e)
       (letrec ([x fv] ...) Cs)
       (begin e ... Cs e ...)]
+
+  ; make boundary markers reserved keywords
+  [w ::= SA AS]
 
   [S ::= ((l hv) ...)]
   [e ::= .... l]

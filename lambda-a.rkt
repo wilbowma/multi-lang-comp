@@ -47,7 +47,10 @@
   [E ::= (let ([x v] ... [x hole] [x n] ...) e) (begin v ... hole n ... e)]
   [v ::= .... l]
   [fv ::= (λ (x ...) e)]
-  [hv ::= v fv (pair v v) (box v)])
+  [hv ::= v fv (pair v v) (box v)]
+
+  ; make boundary markers reserved keywords
+  [w ::= SA AS])
 
 (define λa->composition
   (reduction-relation
@@ -63,8 +66,8 @@
         (S_2 (subst-all e (x ...) (l ...)))
 
         (where (l ...) (fresh-labels x ...))
-        (where (v_1 ...) ((subst-all fv (x ...) (l ...)) ...))
-        (where S_2 (store-extend S_1 (l v_1) ...)))
+        ;(where (v_1 ...) ((subst-all fv (x ...) (l ...)) ...))
+        (where S_2 (store-extend S_1 (l (subst-all fv (x ...) (l ...)) ...) ...)))
 
    (-->λa (S (begin v ... e))
         (S e))))

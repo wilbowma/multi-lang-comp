@@ -130,7 +130,8 @@
    #:arrow -->st
 
    (-->st (in-hole C (AS (SA A.e))) (in-hole C A.e) "Boundary-1")
-   (-->st (in-hole C (SA (AS S.e))) (in-hole C S.e) "Boundary-2")))
+   ;(-->st (in-hole C (SA (AS S.e))) (in-hole C S.e) "Boundary-2")
+   ))
 
 (define anf->+
   (union-reduction-relations
