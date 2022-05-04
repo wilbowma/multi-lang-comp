@@ -37,8 +37,6 @@
   [S.Cs ::= ....]
   [Ts ::= (in-hole S.Cs (SA hole))]
 
-  #;[Cx ::= S.Cs]
-
   [S ::= S.env]
 
   ; For display
@@ -164,6 +162,17 @@
    (st->j e_1 e)])
 
 (define-judgment-form ANFL
+  #:mode (anf2->+j I O)
+
+  [(anf->+j e_1 e_2)
+   ------------------
+   (anf2->+j (in-hole Ts e_1) (in-hole Ts e_2))]
+
+  [(where () ,(maybe-apply-reduction-relation anf->+j (term e)))
+   -----------------
+   (anf2->+j (in-hole S.Cs (SA e)) (in-hole S.Cs e))])
+
+(define-judgment-form ANFL
   #:mode (anf->+j I O)
 
   [(anf->j e_1 e)
@@ -172,7 +181,14 @@
 
   [(st->j e_1 e)
    ----------------
-   (anf->+j e_1 e)])
+   (anf->+j e_1 e)]
+
+  [(where (() ()) ,(list
+                      (maybe-apply-reduction-relation anf->j (term e_1))
+                      (maybe-apply-reduction-relation st->j (term (in-hole T e_1)))))
+   (anf2->+j e_1 e)
+   ----------------
+   (anf->+j (in-hole T e_1) (in-hole T e))])
 
 (define-judgment-form ANFL
   #:mode (anf->*j I O)
@@ -228,33 +244,28 @@
   #:mode (anf-eval->+ I O)
 
   [(λi->j (H_1 S.e_1) (H_2 S.e_2))
-   ----------------------------- "S-Interp"
+   ----------------------------- "S-Interp" ; Step-S1
    (anf-eval->+ (H_1 S.e_1) (H_2 S.e_2))]
 
   [(λi->j (H_1 S.e_1) (H_2 S.e_2))
-   ----------------------------- "AS-Interp"
+   ----------------------------- "AS-Interp" ; Step-S2
    (anf-eval->+ (H_1 (AS S.e_1)) (H_2 (AS S.e_2)))]
 
   [(λa->j (H_1 A.e_1) (H_2 A.e_2))
-   ----------------------------- "A-Run"
+   ----------------------------- "A-Run" ; Step-T1
    (anf-eval->+ (H_1 A.e_1) (H_2 A.e_2))]
 
   [(λa->j (H_1 A.e_1) (H_2 A.e_2))
-   ----------------------------- "SA-Run"
+   ----------------------------- "SA-Run" ; Step-T2
    (anf-eval->+ (H_1 (SA A.e_1)) (H_2 (SA A.e_2)))]
 
   [(anf->+j A.e_1 A.e_2)
-   ;; TODO: Need to be able to translate the heap.
-   ----------------------------- "JIT-A"
+   ----------------------------- "JIT-A" ; Step-Across-A
    (anf-eval->+ (H_1 A.e_1) (H_1 A.e_2))]
 
-  [(anf->+j A.e_1 A.e_2)
-   ----------------------------- "JIT-S"
-   (anf-eval->+ (H_1 (in-hole Ts A.e_1)) (H_1 (in-hole Ts A.e_2)))]
-
-  [(where () ,(maybe-apply-reduction-relation anf->+j (term A.e)))
-   ----------------- "S-Normal"
-   (anf-eval->+ (H_1 (in-hole S.Cs (SA A.e))) (H_1 (in-hole S.Cs A.e)))])
+  [(anf2->+j S.e_1 S.e_2)
+   -------------------- "JIT-S" ; Step-Across-S
+   (anf-eval->+ (H_1 S.e_1) (H_1 S.e_2))])
 
 (define-judgment-form ANFL
   #:mode (anf-eval->* I O)
