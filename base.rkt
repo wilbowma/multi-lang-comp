@@ -7,6 +7,7 @@
 (provide (all-defined-out))
 
 (define-language baseL
+  ;[boundaries ::= SA AS] ;; prevent interpreting these as vars.
   [fixnum ::= integer]
   [arith-op ::= + - * / <]
   [binop ::= arith-op eq?]

@@ -168,7 +168,7 @@
    ------------------
    (anf2->+j (in-hole Ts e_1) (in-hole Ts e_2))]
 
-  [(where () ,(maybe-apply-reduction-relation anf->+j (term e)))
+  [;(where () ,(maybe-apply-reduction-relation anf->+j (term e)))
    -----------------
    (anf2->+j (in-hole S.Cs (SA e)) (in-hole S.Cs e))])
 
@@ -183,6 +183,8 @@
    ----------------
    (anf->+j e_1 e)]
 
+  ;; If it's a translation context, but doesn't translate, then there's a nested SA boundary inside.
+  ;; Defer to anf2 judgment to continue searching.
   [(where (() ()) ,(list
                       (maybe-apply-reduction-relation anf->j (term e_1))
                       (maybe-apply-reduction-relation st->j (term (in-hole T e_1)))))

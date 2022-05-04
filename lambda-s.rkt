@@ -71,7 +71,7 @@
       (begin e ... Cs e ...)]
 
   ; make boundary markers reserved keywords
-  [w ::= SA AS]
+  ;[w ::= SA AS]
 
   [S ::= ((l hv) ...)]
   [e ::= .... l]
