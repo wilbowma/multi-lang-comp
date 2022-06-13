@@ -55,7 +55,7 @@
 
 (define-extended-language λiL-eval λiL
   ;[S ::= env] ; must be a dict of labels to values
-  [E ::= hole (let ([x v] ... [x E] [x e] ...) e) (begin v ... E e ...)
+  [E ::= hole (let ([x v] ... [x E] [x e] ...) e) (begin v ... E e ... e)
      (if E e e) (primop v ... E e ...) (v ... E e ...)]
 
   [Cs ::= hole
