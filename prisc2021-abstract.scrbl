@@ -14,7 +14,13 @@
 
 @author[
 #:orcid "0000-0002-6402-4840"
-#:affiliation "University of British Columbia, CA"
+#:affiliation
+@affiliation[
+#:institution "University of British Columbia"
+#:city "Vancouver"
+#:state "BC"
+#:country "CA"
+]
 #:email (email "wjb@williamjbowman.com")
 ]{William J. Bowman}
 
