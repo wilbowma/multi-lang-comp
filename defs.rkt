@@ -109,6 +109,7 @@
 #;(metafunction-font-size 10)
 #;(label-font-size 9)
 
+; "Linux Libertine" might be okay?
 (define Linux-Liberterine-name "Linux Libertine O")
 (define Inconsolata-name "Inconsolata")
 #;(define LatinModernMath-Regular-name "Latin Modern Math")
