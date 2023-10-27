@@ -1,4 +1,4 @@
-#lang scribble/acmart @sigplan @nonacm @screen @review
+#lang scribble/acmart @sigplan @nonacm @screen
 
 @title{Compilation as Multi-Language Semantics}
 @(require
@@ -23,6 +23,10 @@
 ]
 #:email (email "wjb@williamjbowman.com")
 ]{William J. Bowman}
+
+@acmConference["Workshop on Principles of Secure Compilation (PriSC)" "Jan. 2021" "foo"]
+@acmYear{2021}
+@acmMonth{Jan}
 
 @;{abstract
 Modeling interoperability between programs in different languages is a key
