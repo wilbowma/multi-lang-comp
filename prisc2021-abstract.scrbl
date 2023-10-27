@@ -1,4 +1,4 @@
-#lang scribble/acmart @sigplan @nonacm @screen
+#lang scribble/acmart @sigplan @screen
 
 @title{Compilation as Multi-Language Semantics}
 @(require
@@ -24,7 +24,7 @@
 #:email (email "wjb@williamjbowman.com")
 ]{William J. Bowman}
 
-@acmConference["Workshop on Principles of Secure Compilation (PriSC)" "Jan. 2021" "foo"]
+@acmConference["Workshop on Principles of Secure Compilation (PriSC)" "January 17-22, 2021" "Online"]
 @acmYear{2021}
 @acmMonth{Jan}
 
